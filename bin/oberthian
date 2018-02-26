@@ -1,0 +1,15 @@
+#!perl
+# PODNAME: oberthian
+# ABSTRACT: Oberth prototype script
+
+use Modern::Perl;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use Oberth::Prototype;
+
+sub main {
+	Oberth::Prototype->new_with_options->run;
+}
+
+main;
