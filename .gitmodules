@@ -1,3 +1,6 @@
 [submodule "vendor/p5-Oberth"]
 	path = vendor/p5-Oberth
 	url = https://github.com/oberth-manoeuvre/p5-Oberth.git
+[submodule "vendor/p5-Oberth-VCS-Git"]
+	path = vendor/p5-Oberth-VCS-Git
+	url = https://github.com/oberth-manoeuvre/p5-Oberth-VCS-Git.git
