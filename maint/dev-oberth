@@ -1,0 +1,28 @@
+#!/bin/sh
+
+CURDIR=`dirname "$0"`
+cd $CURDIR/..
+
+DEFAULT_RUN="perl -I/build/curie/local/lib/perl5 -Mlocal::lib=/build/curie/local /build/curie/bin/curie"
+
+if [ -z "$@" ]; then
+	RUN=$DEFAULT_RUN
+else
+	RUN=$@
+fi
+
+xhost +local:root
+
+docker run --rm -it \
+	--env="DISPLAY" \
+	--env="QT_X11_NO_MITSHM=1" \
+	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+	-p 5900 \
+	--name devtest \
+	--mount type=bind,source="/home/zaki/sw_projects/project-renard",target=/project-renard \
+	--mount type=bind,source="/home/zaki/sw_projects/oberth-manoeuvre",target=/oberth-manoeuvre \
+	oberth:latest \
+	$RUN
+
+
+xhost -local:root

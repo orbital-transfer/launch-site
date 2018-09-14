@@ -1,0 +1,6 @@
+#!/bin/sh
+
+CURDIR=`dirname "$0"`
+cd $CURDIR/..
+
+docker build -t oberth .

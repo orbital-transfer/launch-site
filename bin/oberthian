@@ -2,7 +2,8 @@
 # PODNAME: oberthian
 # ABSTRACT: Oberth prototype script
 
-use Modern::Perl;
+use strict;
+use warnings;
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
