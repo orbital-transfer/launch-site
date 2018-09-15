@@ -10,6 +10,7 @@ use File::Find;
 use File::Temp qw(tempdir);
 use File::Path qw(make_path);
 use File::Glob;
+use File::Copy;
 use Config;
 use Env qw(@PATH @PERL5LIB);
 use constant COMMANDS => (
@@ -103,7 +104,7 @@ sub create_cpanfile_in_directory {
 
 	my $pid = open3($wtr, $rdr, $err,
 		qw(scan-prereqs-cpanfile),
-		qq(--ignore=@{[ $self->{dir} ]},vendor),
+		qq(--ignore=@{[ $self->{dir} ]},vendor,@{[ $self->{dir} ]},vendor-external),
 		"--dir=$dir",
 	);
 
@@ -205,7 +206,7 @@ sub install_self_contained_cpm {
 
 	$self->{cpm} = File::Spec->catfile( $self->{bin_dir}, qw(cpm) );
 
-	0 == system( qw(curl -sL --compressed https://git.io/cpm -o), $self->{cpm} ) or die "Could not download cpm: $!";
+	copy( File::Spec->catfile(qw(vendor-external cpm cpm)),  $self->{cpm} ) or die "Could not copy cpm: $!";
 	chmod 0755, $self->{cpm};
 	die "Could not install cpm: $!" unless $self->has_cpm;
 }

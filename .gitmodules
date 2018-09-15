@@ -4,3 +4,6 @@
 [submodule "vendor/p5-Oberth-VCS-Git"]
 	path = vendor/p5-Oberth-VCS-Git
 	url = https://github.com/oberth-manoeuvre/p5-Oberth-VCS-Git.git
+[submodule "vendor-external/cpm"]
+	path = vendor-external/cpm
+	url = https://github.com/skaji/cpm.git
