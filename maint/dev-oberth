@@ -11,16 +11,22 @@ else
 	RUN=$@
 fi
 
+if [ -r /home/zaki/sw_projects ]; then
+MY_MOUNT_VOLUMES="
+	--mount type=bind,source=/home/zaki/sw_projects/project-renard,target=/project-renard
+	--mount type=bind,source=/home/zaki/sw_projects/oberth-manoeuvre,target=/oberth-manoeuvre
+"
+else
+MY_MOUNT_VOLUMES=""
+fi
+
+
 xhost +local:root
 
 docker run --rm -it \
 	--env="DISPLAY" \
-	--env="QT_X11_NO_MITSHM=1" \
 	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-	-p 5900 \
-	--name devtest \
-	--mount type=bind,source="/home/zaki/sw_projects/project-renard",target=/project-renard \
-	--mount type=bind,source="/home/zaki/sw_projects/oberth-manoeuvre",target=/oberth-manoeuvre \
+	$MY_MOUNT_VOLUMES \
 	oberth:latest \
 	$RUN
 
