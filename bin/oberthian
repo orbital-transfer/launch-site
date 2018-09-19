@@ -7,10 +7,15 @@ use warnings;
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Oberth::Prototype;
 
 sub main {
-	Oberth::Prototype->new_with_options->run;
+	if( @ARGV && $ARGV[0] eq 'bootstrap' ) {
+		require Oberth::Prototype::Command::Bootstrap;
+		Oberth::Prototype::Command::Bootstrap->new->run;
+	} else {
+		require Oberth::Prototype;
+		Oberth::Prototype->new_with_options->run;
+	}
 }
 
 main;
