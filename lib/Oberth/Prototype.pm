@@ -28,7 +28,7 @@ BEGIN {
 	unshift @PATH,     File::Spec->catfile( $lib_dir, $_ ) for @{ (BIN_DIRS) };
 }
 
-use Moo;
+use Mu;
 use CLI::Osprey;
 
 use ShellQuote::Any;
@@ -53,31 +53,61 @@ has config => (
 	},
 );
 
+lazy repo => method() {
+	my $repo = $self->repo_for_directory('.');
+};
+
 method _env() {
 	unshift @PATH,     File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (BIN_DIRS) };
 	unshift @PERL5LIB, File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (PERL_LIB_DIRS) };
-}
-
-method run() {
-	$self->_env;
-
-	system(qw(cpm install -L), $self->config->lib_dir, qw(local::lib));
 
 	my $test_data_repo_dir = $self->clone_git("https://github.com/project-renard/test-data.git");
 	$ENV{RENARD_TEST_DATA_PATH} = $test_data_repo_dir;
 
-	system(qw(apt-get install -y --no-install-recommends xvfb));
 	$DISPLAY=':99.0';
+}
+
+method _prepare_x11() {
 	#system(qw(sh -e /etc/init.d/xvfb start));
 	unless( fork ) {
 		exec(qw(Xvfb), $DISPLAY);
 	}
 	sleep 3;
+}
 
-	my $repo = $self->repo_for_directory('.');
+method install() {
+	$self->_env;
+
+	system(qw(cpm install -L), $self->config->lib_dir, qw(local::lib));
+	system(qw(apt-get install -y --no-install-recommends xvfb xauth));
+
+	$self->_prepare_x11;
+
+	my $repo = $self->repo;
+
 	$self->install_recursively($repo, 1);
+
+	$self->install_apt($repo);
+	$repo->setup_build;
+}
+
+method test() {
+	$self->_env;
+
+	$self->_prepare_x11;
+
+	my $repo = $self->repo;
 	$self->test_repo($repo);
 }
+
+method run() {
+	$self->install;
+}
+
+subcommand 'test' => method() {
+	$self->test;
+};
+
 
 method install_recursively($repo, $main = 0) {
 	my @deps = $self->fetch_git($repo);
@@ -107,9 +137,7 @@ method install_repo($repo) {
 }
 
 method test_repo($repo) {
-	$self->install_apt($repo);
-	$repo->setup_build;
-	#$repo->run_test;
+	$repo->run_test;
 }
 
 method fetch_git($repo) {
