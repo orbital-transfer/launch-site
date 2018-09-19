@@ -5,6 +5,7 @@ package Oberth::Prototype::Config;
 use Mu;
 
 use Oberth::Common::Setup;
+use Path::Tiny;
 use FindBin;
 
 has build_tools_dir => (
@@ -14,7 +15,7 @@ has build_tools_dir => (
 
 has lib_dir => (
 	is => 'ro',
-	default => sub { 'local' },
+	default => sub { path('local')->absolute },
 );
 
 has external_dir => (
