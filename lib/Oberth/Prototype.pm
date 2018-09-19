@@ -25,7 +25,6 @@ BEGIN {
 
 	my $lib_dir = BUILD_TOOLS_DIR;
 	unshift @INC,      File::Spec->catfile( $lib_dir, $_ ) for @{ (PERL_LIB_DIRS) };
-	unshift @PERL5LIB, File::Spec->catfile( $lib_dir, $_ ) for @{ (PERL_LIB_DIRS) };
 	unshift @PATH,     File::Spec->catfile( $lib_dir, $_ ) for @{ (BIN_DIRS) };
 }
 
@@ -56,10 +55,9 @@ has config => (
 
 method _env() {
 	unshift @PATH,     File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (BIN_DIRS) };
-	unshift @INC,      File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (PERL_LIB_DIRS) };
 	unshift @PERL5LIB, File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (PERL_LIB_DIRS) };
-
 }
+
 method run() {
 	$self->_env;
 

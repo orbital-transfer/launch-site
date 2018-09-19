@@ -10,7 +10,23 @@ use Capture::Tiny qw(capture);
 use File::Temp qw(tempdir);
 use File::chdir;
 
+use Env qw(@PERL5LIB);
+
 use Oberth::Common::Setup;
+
+method _run_with_build_perl($code) {
+	my @OLD_PERL5LIB = @PERL5LIB;
+
+	my $lib_dir = $self->config->build_tools_dir;
+
+	unshift @PERL5LIB, File::Spec->catfile( $lib_dir, $_ ) for @{ (Oberth::Prototype::PERL_LIB_DIRS()) };
+
+	my @return = $code->();
+
+	@PERL5LIB = @OLD_PERL5LIB;
+
+	@return;
+}
 
 method _install_dzil() {
 	unless( which 'dzil' ) {
@@ -21,8 +37,11 @@ method _install_dzil() {
 method _get_dzil_authordeps() {
 	local $CWD = $self->directory;
 	my ($dzil_authordeps, $dzil_authordeps_stderr, $dzil_authordeps_exit) = capture {
-		system(qw(dzil authordeps)); # --missing
+		$self->_run_with_build_perl(sub {
+			system(qw(dzil authordeps)); # --missing
+		});
 	};
+
 	my @dzil_authordeps = split /\n/, $dzil_authordeps;
 }
 
@@ -37,7 +56,9 @@ method _install_dzil_authordeps() {
 method _get_dzil_listdeps() {
 	local $CWD = $self->directory;
 	my ($dzil_deps, $dzil_deps_stderr, $exit_listdeps) = capture {
-		system(qw(dzil listdeps)); # --missing
+		$self->_run_with_build_perl(sub {
+			system(qw(dzil listdeps)); # --missing
+		});
 	};
 	my @dzil_deps = grep {
 		$_ !~ /
@@ -88,13 +109,20 @@ method setup_build() {
 
 method install() {
 	local $CWD = $self->directory;
-	system(qw(dzil build --in ../build-dir) );
-	system(qw(cpanm --notest ../build-dir) );
+	$self->_run_with_build_perl(sub {
+		system(qw(dzil build --in ../build-dir) );
+	});
+	system(qw(cpanm --notest),
+		qw(--no-man-pages),
+		qw(-L), $self->config->lib_dir,
+		qw(../build-dir) );
 }
 
 method run_test() {
 	local $CWD = $self->directory;
-	system(qw(dzil test));
+	$self->_run_with_build_perl(sub {
+		system(qw(dzil test));
+	});
 }
 
 1;
