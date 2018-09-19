@@ -1,0 +1,15 @@
+sudo: required
+
+language: perl
+
+services:
+  - docker
+
+before_install:
+  - ./maint/build-docker
+  - docker ps -a
+
+install: true
+
+script:
+  - docker run --rm -it oberth:latest sh -c 'cd /build/curie && perl /build/bin/oberthian test'
