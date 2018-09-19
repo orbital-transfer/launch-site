@@ -30,7 +30,9 @@ method _run_with_build_perl($code) {
 
 method _install_dzil() {
 	unless( which 'dzil' ) {
-		system(qw(cpm install -L ), $self->config->build_tools_dir, qw(Dist::Zilla));
+		system(qw(cpm install),
+			qw(-L ), $self->config->build_tools_dir,
+			qw(Dist::Zilla));
 	}
 }
 
@@ -48,8 +50,12 @@ method _get_dzil_authordeps() {
 method _install_dzil_authordeps() {
 	my @dzil_authordeps = $self->_get_dzil_authordeps;
 	if( @dzil_authordeps ) {
-		system(qw(cpm install -L), $self->config->build_tools_dir, @dzil_authordeps);
-		system(qw(cpanm -qn -L), $self->config->build_tools_dir, @dzil_authordeps);
+		system(qw(cpm install),
+			qw(-L), $self->config->build_tools_dir,
+			@dzil_authordeps);
+		system(qw(cpanm -qn),
+			qw(-L), $self->config->build_tools_dir,
+			@dzil_authordeps);
 	}
 }
 
@@ -74,9 +80,14 @@ method _get_dzil_listdeps() {
 
 method _install_dzil_listdeps() {
 	my @dzil_deps = $self->_get_dzil_listdeps;
+	my $global = 0;
 	if( @dzil_deps ) {
-		system(qw(cpm install -L), $self->config->lib_dir, @dzil_deps);
-		system(qw(cpanm -qn -L), $self->config->lib_dir, @dzil_deps);
+		system(qw(cpm install),
+			( $global ? qw(-g) : qw(-L), $self->config->lib_dir ),
+			@dzil_deps);
+		system(qw(cpanm -qn),
+			( $global ? () : qw(-L), $self->config->lib_dir ),
+			@dzil_deps);
 	}
 }
 
