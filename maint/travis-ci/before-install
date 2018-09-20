@@ -4,5 +4,10 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 	./maint/build-docker
 	docker ps -a
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
-	true
+	perl ./bin/oberthian bootstrap setup --dir extlib
+	perl ./bin/oberthian bootstrap generate-cpanfile --dir extlib
+	perl ./bin/oberthian bootstrap install-deps-from-cpanfile --dir extlib
+
+	git clone https://github.com/project-renard/curie.git
+	cd $TRAVIS_BUILD_DIR/curie && perl $TRAVIS_BUILD_DIR/bin/oberthian
 fi
