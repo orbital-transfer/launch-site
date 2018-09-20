@@ -111,7 +111,7 @@ method _install_dzil_spell_check_if_needed() {
 	return unless $^O eq 'linux';
 
 	if( $self->_dzil_has_plugin_test_podspelling ) {
-		system(qw(apt-get install -y --no-install-recommends aspell));
+		system(qw(apt-get install -y --no-install-recommends aspell aspell-en));
 	}
 }
 
