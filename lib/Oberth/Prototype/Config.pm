@@ -25,4 +25,9 @@ has external_dir => (
 	},
 );
 
+has platform => (
+	is => 'ro',
+	required => 1,
+);
+
 1;

@@ -3,7 +3,7 @@ use warnings;
 package Oberth::Prototype;
 # ABSTRACT: Command line base for oberthian
 
-use Env qw(@PATH @PERL5LIB $DISPLAY);
+use Env qw(@PATH @PERL5LIB);
 use Config;
 
 use FindBin;
@@ -39,6 +39,8 @@ use Oberth::Common::Setup;
 use Oberth::Prototype::Config;
 use Oberth::Prototype::Repo;
 
+use Oberth::Prototype::System::Debian;
+
 has repo_url_to_repo => (
 	is => 'ro',
 	default => sub { +{} },
@@ -49,6 +51,7 @@ has config => (
 	default => sub {
 		Oberth::Prototype::Config->new(
 			build_tools_dir => BUILD_TOOLS_DIR,
+			platform => Oberth::Prototype::System::Debian->new,
 		);
 	},
 );
@@ -64,37 +67,30 @@ method _env() {
 	my $test_data_repo_dir = $self->clone_git("https://github.com/project-renard/test-data.git");
 	$ENV{RENARD_TEST_DATA_PATH} = $test_data_repo_dir;
 
-	$DISPLAY=':99.0';
-}
-
-method _prepare_x11() {
-	#system(qw(sh -e /etc/init.d/xvfb start));
-	unless( fork ) {
-		exec(qw(Xvfb), $DISPLAY);
-	}
-	sleep 3;
+	$self->config->platform->_env;
 }
 
 method install() {
 	$self->_env;
 
 	system(qw(cpm install -L), $self->config->lib_dir, qw(local::lib));
-	system(qw(apt-get install -y --no-install-recommends xvfb xauth));
 
-	$self->_prepare_x11;
+	$self->config->platform->_install;
+
+	$self->config->platform->_pre_run;
 
 	my $repo = $self->repo;
 
 	$self->install_recursively($repo, 1);
 
-	$self->install_apt($repo);
+	$self->config->platform->install_packages($repo);
 	$repo->setup_build;
 }
 
 method test() {
 	$self->_env;
 
-	$self->_prepare_x11;
+	$self->config->platform->_pre_run;
 
 	my $repo = $self->repo;
 	$self->test_repo($repo);
@@ -119,17 +115,10 @@ method install_recursively($repo, $main = 0) {
 	}
 }
 
-method install_apt($repo) {
-	my @packages = @{ $repo->debian_get_packages };
-	if( @packages ) {
-		system(qw(apt-get install -y --no-install-recommends), @packages );
-	}
-}
-
 method install_repo($repo) {
 	return if -f $repo->directory->child('installed');
 
-	$self->install_apt($repo);
+	$self->config->platform->install_packages($repo);
 	$repo->setup_build;
 	$repo->install;
 
