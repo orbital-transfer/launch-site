@@ -1,15 +1,14 @@
-sudo: required
-
 language: perl
 
-services:
-  - docker
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      services: docker
+    - os: osx
 
-before_install:
-  - ./maint/build-docker
-  - docker ps -a
+before_install: ./maint/travis-ci/before-install
 
 install: true
 
-script:
-  - docker run --rm -it oberth:latest sh -c 'cd /build/curie && perl /build/bin/oberthian test'
+script: ./maint/travis-ci/script
