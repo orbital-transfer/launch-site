@@ -65,6 +65,7 @@ sub run_setup {
 	$self->install_self_contained_cpm unless $self->has_cpm;
 
 	$self->_cpm(
+		'--resolver', '02packages,http://cpan.metacpan.org',
 		qw(App::cpanminus),
 	) unless $self->has_cpanm;
 
