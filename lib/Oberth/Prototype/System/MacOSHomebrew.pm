@@ -4,6 +4,7 @@ package Oberth::Prototype::System::MacOSHomebrew;
 
 use Mu;
 use Oberth::Common::Setup;
+use IPC::System::Simple ();
 
 use Env qw(@PATH @PKG_CONFIG_PATH $ARCHFLAGS);
 
@@ -48,15 +49,17 @@ method install_packages($repo) {
 		# Skip font cache generation (for fontconfig):
 		# <https://github.com/Homebrew/homebrew-core/pull/10947#issuecomment-285946088>
 		my $has_fontconfig_dep = eval {
+			use autodie qw(:system);
 			system( qq{brew deps --union @packages | grep ^fontconfig\$ && brew install --force-bottle --build-bottle fontconfig} );
 		};
 
 		my @deps_to_install = grep {
 			my $dep = $_;
 			eval {
+				use autodie qw(:system);
 				system( qq{brew ls @packages >/dev/null 2>&1} );
 			};
-			1 if $@;
+			$@ ? 1 : 0;
 		} @packages;
 		say STDERR "Native deps to install: @deps_to_install";
 
