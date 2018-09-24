@@ -33,6 +33,7 @@ use CLI::Osprey;
 
 use ShellQuote::Any;
 use File::Path qw(make_path);
+use File::Which;
 
 use Oberth::Common::Setup;
 
@@ -40,6 +41,7 @@ use Oberth::Prototype::Config;
 use Oberth::Prototype::Repo;
 
 use Oberth::Prototype::System::Debian;
+use Oberth::Prototype::System::MacOSHomebrew;
 
 has repo_url_to_repo => (
 	is => 'ro',
@@ -49,9 +51,15 @@ has repo_url_to_repo => (
 has config => (
 	is => 'ro',
 	default => sub {
+		my $system;
+		if(  $^O eq 'darwin' && which('brew') ) {
+			$system = Oberth::Prototype::System::MacOSHomebrew->new;
+		} else {
+			$system = Oberth::Prototype::System::Debian->new;
+		}
 		Oberth::Prototype::Config->new(
 			build_tools_dir => BUILD_TOOLS_DIR,
-			platform => Oberth::Prototype::System::Debian->new,
+			platform => $system,
 		);
 	},
 );
