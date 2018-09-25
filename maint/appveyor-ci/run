@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Env;
+
+sub install {
+	print "INSTALL\n";
+}
+
+sub build {
+	print "BUILD\n";
+}
+
+sub test {
+	print "TEST\n";
+}
+
+sub main {
+	my %function_lookup = (
+		install => \&install,
+		build   => \&build,
+		test    => \&test,
+	);
+
+	if( exists $ARGV[0] && exists $function_lookup{$ARGV[0]} ) {
+		$function_lookup{$ARGV[0]}->();
+	}
+}
+
+main;

@@ -1,0 +1,19 @@
+version: 1.0.{build}
+
+cache:
+  # cache local::lib
+  - C:\msys64\mingw64\lib\perl5\site_perl -> appveyor.yml
+  - C:\msys64\mingw64\bin\site_perl -> appveyor.yml
+  - C:\msys64\home\%Username%\perl5 -> appveyor.yml
+  - maint/cpanfile-git-log -> appveyor.yml
+  # cache for devops helper.pl
+  - C:\Perl\site -> appveyor.yml
+
+install:
+  - cd %APPVEYOR_BUILD_FOLDER% & perl maint\appveyor-ci\run install
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER% & perl maint\appveyor-ci\run build
+
+test_script:
+  - cd %APPVEYOR_BUILD_FOLDER% & perl maint\appveyor-ci\run test
