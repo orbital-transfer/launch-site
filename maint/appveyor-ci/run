@@ -4,20 +4,47 @@ use strict;
 use warnings;
 
 use Env;
+use File::Spec;
 
 sub install {
 	print "INSTALL\n";
+
+	system(qw(cinst curl -y));
+	system(qw(curl -fsS -o helper.pl), "https://raw.githubusercontent.com/project-renard/devops/$ENV{DEVOPS_BRANCH}/script/helper.pl");
+	system(qw(perl helper.pl install));
 }
 
 sub build {
 	print "BUILD\n";
+
+	print "Nothing to build\n";
 }
 
 sub test {
 	print "TEST\n";
+
+	system(qw(perl helper.pl test));
 }
 
 sub main {
+	$ENV{COMPILER} = "msys2";
+	$ENV{PLATFORM} = "x64";
+	$ENV{MSYS2_ARCH} = "x86_64";
+	$ENV{MSYS2_DIR} = "msys64";
+	$ENV{MSYSTEM} = "MINGW64";
+	$ENV{BIT} = 64;
+
+	## running under CI
+	$ENV{CI_TESTING} = 1;
+	$ENV{DEVOPS_BRANCH} = "master";
+
+	$ENV{APPVEYOR_BUILD_FOLDER} = File::Spec->catfile($ENV{APPVEYOR_BUILD_FOLDER}, "curie");
+
+	if( ! -d $ENV{APPVEYOR_BUILD_FOLDER} ) {
+		system(qw(git clone https://github.com/project-renard/curie.git), $ENV{APPVEYOR_BUILD_FOLDER});
+	}
+	chdir $ENV{APPVEYOR_BUILD_FOLDER};
+
 	my %function_lookup = (
 		install => \&install,
 		build   => \&build,
