@@ -5,13 +5,25 @@ use warnings;
 
 use Env;
 use File::Spec;
+use File::Path qw(make_path);
+use File::Copy;
+
+our $HELPER_SCRIPT;
+
+sub setup_devops {
+	my $source = File::Spec->catfile(qw(project-renard devops));
+	my $target = File::Spec->catfile(qw(external project-renard devops));
+	if( ! -d $target ) {
+		make_path(File::Spec->catfile(qw(external project-renard)));
+		move($source, $target)
+	}
+
+}
 
 sub install {
 	print "INSTALL\n";
 
-	system(qw(cinst curl -y));
-	system(qw(curl -fsS -o helper.pl), "https://raw.githubusercontent.com/project-renard/devops/$ENV{DEVOPS_BRANCH}/script/helper.pl");
-	system(qw(perl helper.pl install));
+	system(qw(perl), $HELPER_SCRIPT, qw(install));
 }
 
 sub build {
@@ -23,10 +35,12 @@ sub build {
 sub test {
 	print "TEST\n";
 
-	system(qw(perl helper.pl test));
+	system(qw(perl), $HELPER_SCRIPT, qw(test));
 }
 
 sub main {
+	setup_devops;
+
 	$ENV{COMPILER} = "msys2";
 	$ENV{PLATFORM} = "x64";
 	$ENV{MSYS2_ARCH} = "x86_64";
@@ -37,6 +51,12 @@ sub main {
 	## running under CI
 	$ENV{CI_TESTING} = 1;
 	$ENV{DEVOPS_BRANCH} = "master";
+
+	$HELPER_SCRIPT = File::Spec->rel2abs(
+		File::Spec->catfile(
+			qw(external project-renard devops script helper.pl)
+		)
+	);
 
 	$ENV{APPVEYOR_BUILD_FOLDER} = File::Spec->catfile($ENV{APPVEYOR_BUILD_FOLDER}, "curie");
 
