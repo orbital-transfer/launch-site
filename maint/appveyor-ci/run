@@ -8,6 +8,7 @@ use File::Spec;
 use File::Path qw(make_path);
 use File::Copy;
 
+our $OBERTH_DIRECTORY;
 our $HELPER_SCRIPT;
 
 sub setup_devops {
@@ -23,19 +24,36 @@ sub setup_devops {
 sub install {
 	print "INSTALL\n";
 
-	system(qw(perl), $HELPER_SCRIPT, qw(install));
+	my $oberth_cpanfile_log = File::Spec->catfile($OBERTH_DIRECTORY, qw(maint cpanfile-git-log));
+	my $repo_cpanfile_log = File::Spec->rel2abs(File::Spec->catfile(qw(maint cpanfile-git-log)));
+
+	if( -d $oberth_cpanfile_log ) {
+		make_path(qw(maint));
+		move( $oberth_cpanfile_log, $repo_cpanfile_log );
+	}
+
+	my $exit = system(qw(perl), $HELPER_SCRIPT, qw(install));
+
+	if( -d $repo_cpanfile_log ) {
+		make_path(File::Spec->catfile($OBERTH_DIRECTORY, qw(maint)));
+		move( $repo_cpanfile_log, $oberth_cpanfile_log );
+	}
+
+	return $exit;
 }
 
 sub build {
 	print "BUILD\n";
 
 	print "Nothing to build\n";
+
+	return 0;
 }
 
 sub test {
 	print "TEST\n";
 
-	system(qw(perl), $HELPER_SCRIPT, qw(test));
+	return system(qw(perl), $HELPER_SCRIPT, qw(test));
 }
 
 sub main {
@@ -51,6 +69,8 @@ sub main {
 	## running under CI
 	$ENV{CI_TESTING} = 1;
 	$ENV{DEVOPS_BRANCH} = "master";
+
+	$OBERTH_DIRECTORY = File::Spec->rel2abs('.');
 
 	$HELPER_SCRIPT = File::Spec->rel2abs(
 		File::Spec->catfile(
@@ -72,7 +92,7 @@ sub main {
 	);
 
 	if( exists $ARGV[0] && exists $function_lookup{$ARGV[0]} ) {
-		$function_lookup{$ARGV[0]}->();
+		exit $function_lookup{$ARGV[0]}->();
 	}
 }
 
