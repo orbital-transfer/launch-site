@@ -1,5 +1,8 @@
 version: 1.0.{build}
 
+environment:
+  OBERTH_TEST_REPO: https://github.com/project-renard/curie.git
+
 cache:
   # cache local::lib
   - C:\msys64\mingw64\lib\perl5\site_perl -> appveyor.yml
@@ -10,10 +13,10 @@ cache:
   - C:\Perl\site -> appveyor.yml
 
 install:
-  - cd %APPVEYOR_BUILD_FOLDER% & perl maint\appveyor-ci\run install
+  - ps: . script\ci\appveyor-oberth.ps1
+  - ps: appveyor-oberth install
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER% & perl maint\appveyor-ci\run build
-
+  - ps: appveyor-oberth build-script
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER% & perl maint\appveyor-ci\run test
+  - ps: appveyor-oberth test-script

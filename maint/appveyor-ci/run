@@ -12,10 +12,10 @@ our $OBERTH_DIRECTORY;
 our $HELPER_SCRIPT;
 
 sub setup_devops {
-	my $source = File::Spec->catfile(qw(project-renard devops));
-	my $target = File::Spec->catfile(qw(external project-renard devops));
+	my $source = File::Spec->catfile($ENV{OBERTH_PROTOTYPE_DIR}, qw(project-renard devops));
+	my $target = File::Spec->catfile(qw(.. external project-renard devops));
 	if( ! -d $target ) {
-		make_path(File::Spec->catfile(qw(external project-renard)));
+		make_path(File::Spec->catfile(qw(.. external project-renard)));
 		move($source, $target)
 	}
 
@@ -74,15 +74,11 @@ sub main {
 
 	$HELPER_SCRIPT = File::Spec->rel2abs(
 		File::Spec->catfile(
-			qw(external project-renard devops script helper.pl)
-		)
+			qw(.. external project-renard devops script helper.pl)
+		),
 	);
 
-	$ENV{APPVEYOR_BUILD_FOLDER} = File::Spec->catfile($ENV{APPVEYOR_BUILD_FOLDER}, "curie");
-
-	if( ! -d $ENV{APPVEYOR_BUILD_FOLDER} ) {
-		system(qw(git clone https://github.com/project-renard/curie.git), $ENV{APPVEYOR_BUILD_FOLDER});
-	}
+	$ENV{APPVEYOR_BUILD_FOLDER} = $ENV{OBERTH_TEST_DIR};
 	chdir $ENV{APPVEYOR_BUILD_FOLDER};
 
 	my %function_lookup = (
