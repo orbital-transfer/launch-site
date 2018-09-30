@@ -1,5 +1,9 @@
 language: perl
 
+env:
+  - OBERTH_TEST_REPO: https://github.com/project-renard/curie.git
+
+
 matrix:
   include:
     - os: linux
@@ -7,8 +11,9 @@ matrix:
       services: docker
     - os: osx
 
-before_install: ./maint/travis-ci/before-install
+before_install:
+  - . ./script/ci/travis-oberth.sh
+  - travis-oberth before-install
 
-install: true
-
-script: ./maint/travis-ci/script
+install: travis-oberth install
+script:  travis-oberth script
