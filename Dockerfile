@@ -3,17 +3,13 @@ FROM perl:5.26.0
 # Set the working directory to /build
 WORKDIR /build
 
-# Copy the current directory contents into the container at /build
-ADD . /build
+# Copy the current directory contents into the container at /oberth-prototype
+ADD . /oberth-prototype
 
-RUN apt-get update && xargs apt-get install -y --no-install-recommends < maint/docker-debian-packages
+ENV PATH="/oberth-prototype/bin:${PATH}"
+RUN /oberth-prototype/maint/replace-shebang /oberth-prototype/bin/oberthian
 
-RUN perl ./bin/oberthian bootstrap setup --dir extlib
-RUN perl ./bin/oberthian bootstrap generate-cpanfile --dir extlib
-RUN perl ./bin/oberthian bootstrap install-deps-from-cpanfile --dir extlib
+RUN oberthian bootstrap docker-install-apt
+RUN oberthian bootstrap auto
 
-RUN git clone https://github.com/project-renard/curie.git
-RUN cd /build/curie && perl /build/bin/oberthian
-
-# Run app.py when the container launches
-CMD ["bash"]
+CMD sh -c "cd /build/repository && oberthian && oberthian test"
