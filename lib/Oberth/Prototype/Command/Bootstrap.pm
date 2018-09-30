@@ -4,19 +4,22 @@ package Oberth::Prototype::Command::Bootstrap;
 # ABSTRACT: Bootstrap a repo
 
 use feature 'say';
+use FindBin;
+use Cwd qw(getcwd realpath);
 use IPC::Open3;
 use File::Spec;
 use File::Find;
-use File::Temp qw(tempdir);
 use File::Path qw(make_path);
 use File::Glob;
 use File::Copy;
 use Config;
 use Env qw(@PATH @PERL5LIB);
 use constant COMMANDS => (
+	'auto' => \&run_auto,
 	'setup' => \&run_setup,
 	'generate-cpanfile' => \&run_generate_cpanfile,
 	'install-deps-from-cpanfile' => \&run_install_deps_from_cpanfile,
+	'docker-install-apt' => \&run_docker_install_apt,
 );
 
 sub new {
@@ -38,7 +41,9 @@ sub new {
 
 	die "need command: $commands_re" unless $command;
 
-	$dir = tempdir( CLEANUP => 1 ) unless $dir;
+	my $oberthian_dir = realpath( File::Spec->rel2abs(File::Spec->catfile($FindBin::Bin, '..')) );
+
+	$dir = File::Spec->catfile( $oberthian_dir, qw(extlib)) unless $dir;
 
 	my $bin_dir = File::Spec->catfile($dir, qw(bin));
 	make_path $bin_dir;
@@ -53,10 +58,21 @@ sub new {
 
 	bless {
 		command => $command,
+		oberthian_dir => $oberthian_dir,
 		dir => $dir,
 		bin_dir => $bin_dir,
 		lib_dir => $lib_dir,
+		vendor_dir => File::Spec->catfile($oberthian_dir, qw(vendor)),
+		vendor_external_dir => File::Spec->catfile($oberthian_dir, qw(vendor-external)),
 	}, $package;
+}
+
+sub run_auto {
+	my ($self) = @_;
+
+	$self->run_setup;
+	$self->run_generate_cpanfile;
+	$self->run_install_deps_from_cpanfile;
 }
 
 sub run_setup {
@@ -103,10 +119,21 @@ sub create_cpanfile_in_directory {
 
 	my $cpanfile = IO::File->new(File::Spec->catfile($dir, 'cpanfile'), 'w');
 
+	my $old_pwd = getcwd;
+
+	chdir $dir;
+	my $rel_dir = File::Spec->abs2rel($dir);
 	my $pid = open3($wtr, $rdr, $err,
 		qw(scan-prereqs-cpanfile),
-		qq(--ignore=@{[ $self->{dir} ]},vendor,@{[ $self->{dir} ]},vendor-external),
-		"--dir=$dir",
+		qq(--ignore=)
+			. join(',',
+				qw(
+					extlib
+					vendor
+					vendor-external
+				)
+			),
+		"--dir=$rel_dir",
 	);
 
 	close $wtr;
@@ -116,15 +143,18 @@ sub create_cpanfile_in_directory {
 	}
 	waitpid( $pid, 0 );
 
+	chdir $old_pwd;
+
 	my $child_exit_status = $? >> 8;
 }
 
 sub run_generate_cpanfile {
 	my ($self) = @_;
 
-	$self->create_cpanfile_in_directory('.');
+	$self->create_cpanfile_in_directory($self->{oberthian_dir});
 
 	my @dirs = $self->get_vendor_dirs;
+	say @dirs;
 	for my $vendor_dir (@dirs) {
 		$self->create_cpanfile_in_directory($vendor_dir);
 	}
@@ -133,7 +163,8 @@ sub run_generate_cpanfile {
 sub get_vendor_dirs {
 	my ($self) = @_;
 
-	my @dirs = grep { -d } <vendor/*>;
+	my $vendor_dir = $self->{vendor_dir};
+	my @dirs = grep { -d } <$vendor_dir/*>;
 }
 
 sub _install_cpanfile {
@@ -152,12 +183,20 @@ sub _install_cpanfile {
 sub run_install_deps_from_cpanfile {
 	my ($self) = @_;
 
-	$self->_install_cpanfile(File::Spec->catfile('.', 'cpanfile'));
+	$self->_install_cpanfile(File::Spec->catfile($self->{oberthian_dir}, 'cpanfile'));
 
 	my @dirs = $self->get_vendor_dirs;
 	for my $vendor_dir (@dirs) {
 		$self->_install_cpanfile(File::Spec->catfile($vendor_dir, 'cpanfile'));
 	}
+}
+
+sub run_docker_install_apt {
+	system(<<'EOF');
+	apt-get update && \
+		xargs apt-get install -y --no-install-recommends \
+		< /oberth-prototype/maint/docker-debian-packages
+EOF
 }
 
 sub run {
@@ -207,7 +246,7 @@ sub install_self_contained_cpm {
 
 	$self->{cpm} = File::Spec->catfile( $self->{bin_dir}, qw(cpm) );
 
-	copy( File::Spec->catfile(qw(vendor-external cpm cpm)),  $self->{cpm} ) or die "Could not copy cpm: $!";
+	copy( File::Spec->catfile($self->{vendor_external_dir}, qw(cpm cpm)),  $self->{cpm} ) or die "Could not copy cpm: $!";
 	chmod 0755, $self->{cpm};
 	die "Could not install cpm: $!" unless $self->has_cpm;
 }
