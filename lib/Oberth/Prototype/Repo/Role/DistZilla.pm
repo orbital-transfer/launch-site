@@ -137,8 +137,14 @@ method install() {
 method run_test() {
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
-		system(qw(dzil test));
+		system(qw(dzil build --in ../build-dir) );
 	});
+	use autodie qw(system);
+	system(qw(cpanm --test-only),
+		qw(--verbose),
+		qw(--no-man-pages),
+		qw(-L), $self->config->lib_dir,
+		qw(../build-dir) );
 }
 
 1;
