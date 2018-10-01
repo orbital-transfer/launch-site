@@ -1,7 +1,10 @@
 #!/bin/sh
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-	docker run --rm -it oberth:latest sh -c 'cd /build/curie && perl /build/bin/oberthian test'
+	docker run --rm -it \
+		--mount type=bind,source=$OBERTH_TEST_DIR,target=/build/repository \
+		oberth:latest
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
-	cd $TRAVIS_BUILD_DIR/curie && perl $TRAVIS_BUILD_DIR/bin/oberthian test
+	cd $OBERTH_TEST_DIR && oberthian
+	cd $OBERTH_TEST_DIR && oberthian test
 fi
