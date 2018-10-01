@@ -11,7 +11,7 @@ function _Setup {
 		$Env:OBERTH_TEST_DIR=$Env:APPVEYOR_BUILD_FOLDER
 
 		if ( [string]::IsNullOrEmpty($Env:OBERTH_PROTOTYPE_BRANCH) ) {
-			$Env:OBERTH_PROTOTYPE_BRANCH="9-clone-ci";
+			$Env:OBERTH_PROTOTYPE_BRANCH="master";
 		}
 
 		git clone `

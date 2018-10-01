@@ -12,7 +12,7 @@ function _setup() {
 		export OBERTH_TEST_DIR=$TRAVIS_BUILD_DIR
 
 		if [ -z "$OBERTH_PROTOTYPE_BRANCH" ]; then
-			export OBERTH_PROTOTYPE_BRANCH="9-clone-ci";
+			export OBERTH_PROTOTYPE_BRANCH="master";
 		fi
 
 		git clone \
