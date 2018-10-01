@@ -89,6 +89,19 @@ method _install_dzil_listdeps() {
 			( $global ? () : qw(-L), $self->config->lib_dir ),
 			@dzil_deps);
 	}
+
+}
+
+method _install_dzil_build() {
+	local $CWD = $self->directory;
+	$self->_run_with_build_perl(sub {
+		system(qw(dzil build --in ../build-dir) );
+	});
+	use autodie qw(system);
+	system(qw(cpanm -qn),
+		qw(--installdeps),
+		qw(-L), $self->config->lib_dir,
+		qw(../build-dir) );
 }
 
 method _dzil_has_plugin_test_podspelling() {
@@ -121,6 +134,7 @@ method setup_build() {
 	$self->_install_dzil_spell_check_if_needed;
 
 	$self->_install_dzil_listdeps;
+	$self->_install_dzil_build;
 }
 
 method install() {
