@@ -128,9 +128,11 @@ method install_repo($repo) {
 
 	$self->config->platform->install_packages($repo);
 	$repo->setup_build;
-	$repo->install;
+	my $exit = $repo->install;
 
 	$repo->directory->child('installed')->touch;
+
+	return $exit;
 }
 
 method test_repo($repo) {
