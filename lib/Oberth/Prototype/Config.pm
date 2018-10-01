@@ -21,7 +21,7 @@ has lib_dir => (
 has external_dir => (
 	is => 'ro',
 	default => sub {
-		File::Spec->catfile( $FindBin::Bin, '..', qw(external));
+		File::Spec->catfile( '..', qw(external) );
 	},
 );
 
