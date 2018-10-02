@@ -32,6 +32,11 @@ method install_packages($repo) {
 	if( @packages ) {
 		system(qw(apt-get install -y --no-install-recommends), @packages );
 	}
+
+	if( grep { $_ eq 'meson' } @packages ) {
+		require Oberth::Prototype::System::Debian::Meson;
+		Oberth::Prototype::System::Debian::Meson->setup;
+	}
 }
 
 
