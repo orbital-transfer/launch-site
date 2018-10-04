@@ -13,6 +13,14 @@ use File::chdir;
 use Env qw(@PERL5LIB $HARNESS_PERL_SWITCHES);
 
 use Oberth::Common::Setup;
+use Oberth::Prototype::System::Debian::Meson;
+
+method _env() {
+	my @packages = @{ $self->debian_get_packages };
+	if( grep { $_ eq 'meson' } @packages ) {
+		Oberth::Prototype::System::Debian::Meson->_env;
+	}
+}
 
 method _run_with_build_perl($code) {
 	my @OLD_PERL5LIB = @PERL5LIB;
@@ -129,6 +137,7 @@ method _install_dzil_spell_check_if_needed() {
 }
 
 method setup_build() {
+	$self->_env;
 	$self->_install_dzil;
 	$self->_install_dzil_authordeps;
 	$self->_install_dzil_spell_check_if_needed;
@@ -138,6 +147,7 @@ method setup_build() {
 }
 
 method install() {
+	$self->_env;
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
 		system(qw(dzil build --in ../build-dir) );
@@ -149,6 +159,7 @@ method install() {
 }
 
 method run_test() {
+	$self->_env;
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
 		system(qw(dzil build --in ./build-dir) );

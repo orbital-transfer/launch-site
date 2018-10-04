@@ -4,6 +4,7 @@ package Oberth::Prototype::System::Debian;
 
 use Mu;
 use Oberth::Common::Setup;
+use Oberth::Prototype::System::Debian::Meson;
 
 use Env qw($DISPLAY);
 
@@ -34,7 +35,6 @@ method install_packages($repo) {
 	}
 
 	if( grep { $_ eq 'meson' } @packages ) {
-		require Oberth::Prototype::System::Debian::Meson;
 		Oberth::Prototype::System::Debian::Meson->setup;
 	}
 }
