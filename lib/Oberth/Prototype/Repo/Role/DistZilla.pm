@@ -151,7 +151,7 @@ method install() {
 method run_test() {
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ../build-dir) );
+		system(qw(dzil build --in ./build-dir) );
 	});
 
 	use autodie qw(system);
@@ -180,10 +180,10 @@ method run_test() {
 		qw(--verbose),
 		qw(--no-man-pages),
 		qw(-L), $self->config->lib_dir,
-		qw(../build-dir) );
+		qw(./build-dir) );
 
 	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
-		local $CWD = File::Spec->catfile( $self->directory, qw(.. build-dir) );
+		local $CWD = File::Spec->catfile( $self->directory, qw(build-dir) );
 		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
 			system(qw(cover), qw(-report coveralls));
 		} else {
