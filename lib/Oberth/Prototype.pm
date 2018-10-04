@@ -89,9 +89,11 @@ method install() {
 
 	my $repo = $self->repo;
 
-	$self->install_recursively($repo, 1);
-
 	$self->config->platform->install_packages($repo);
+
+	$self->install_recursively($repo, main => 1, native => 1);
+	$self->install_recursively($repo, main => 1, native => 0 );
+
 	$repo->setup_build;
 }
 
@@ -113,24 +115,29 @@ subcommand 'test' => method() {
 };
 
 
-method install_recursively($repo, $main = 0) {
+method install_recursively($repo, :$main = 0, :$native = 0) {
 	my @deps = $self->fetch_git($repo);
 	for my $dep (@deps) {
-		$self->install_recursively( $dep  );
+		$self->install_recursively( $dep, native => $native  );
 	}
 	if( !$main ) {
-		$self->install_repo($repo);
+		$self->install_repo($repo, native => $native );
 	}
 }
 
-method install_repo($repo) {
+method install_repo($repo, :$native = 0 ) {
 	return if -f $repo->directory->child('installed');
 
-	$self->config->platform->install_packages($repo);
-	$repo->setup_build;
-	my $exit = $repo->install;
+	my $exit = 0;
 
-	$repo->directory->child('installed')->touch;
+	if( $native ) {
+		$self->config->platform->install_packages($repo);
+	} else {
+		$repo->setup_build;
+		$exit = $repo->install;
+
+		$repo->directory->child('installed')->touch;
+	}
 
 	return $exit;
 }
