@@ -172,7 +172,7 @@ method clone_git($url, $branch = 'master') {
 
 	say STDERR "Cloning $url @ [branch: $branch]";
 	my ($parts) = $url =~ m,^https?://[^/]+/(.+?)(?:\.git)?$,;
-	my $path = File::Spec->catfile($self->config->external_dir, split(m|/|, $parts));
+	my $path = File::Spec->rel2abs(File::Spec->catfile($self->config->external_dir, split(m|/|, $parts)));
 
 	unless( -d $path ) {
 		system(qw(git clone),
