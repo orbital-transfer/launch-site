@@ -1,7 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 	docker run --rm -it \
+		$(perl -e 'print join " ", map { "-e $_" } grep { /^OBERTH_/ } keys %ENV') \
+		$(perl -e 'print join " ", map { "-e $_" } grep { /^TRAVIS/ } keys %ENV') \
 		--mount type=bind,source=$OBERTH_TEST_DIR,target=/build/repository \
 		oberth:latest
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
