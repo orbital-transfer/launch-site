@@ -974,7 +974,7 @@ EOF
 			if [ -f Makefile.PL ]; then
 				command perl Makefile.PL;
 			fi
-			command dmake;
+			command mingw32-make;
 			blib='-l';
 			if find blib/arch/ -type f ! -empty | grep -q ^; then
 				blib='-b';
