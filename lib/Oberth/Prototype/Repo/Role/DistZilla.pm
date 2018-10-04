@@ -10,7 +10,7 @@ use Capture::Tiny qw(capture);
 use File::Temp qw(tempdir);
 use File::chdir;
 
-use Env qw(@PERL5LIB);
+use Env qw(@PERL5LIB $HARNESS_PERL_SWITCHES);
 
 use Oberth::Common::Setup;
 
@@ -153,12 +153,45 @@ method run_test() {
 	$self->_run_with_build_perl(sub {
 		system(qw(dzil build --in ../build-dir) );
 	});
+
 	use autodie qw(system);
+	my $OLD_HARNESS_PERL_SWITCHES = $HARNESS_PERL_SWITCHES;
+
+	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
+		# Need to have at least Devel::Cover~1.31 for fix to
+		# "Devel::Cover hangs when used with Function::Parameters"
+		# GH#164 <https://github.com/pjcj/Devel--Cover/issues/164>.
+		system(qw(cpanm --notest),
+			qw(--no-man-pages),
+			qw(-L), $self->config->lib_dir,
+			qw(Devel::Cover~1.31) );
+
+		$HARNESS_PERL_SWITCHES .= " -MDevel::Cover";
+
+		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
+			system(qw(cpanm --notest),
+				qw(--no-man-pages),
+				qw(-L), $self->config->lib_dir,
+				qw(Devel::Cover::Report::Coveralls) );
+		}
+	}
+
 	system(qw(cpanm --test-only),
 		qw(--verbose),
 		qw(--no-man-pages),
 		qw(-L), $self->config->lib_dir,
 		qw(../build-dir) );
+
+	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
+		local $CWD = File::Spec->catfile( $self->directory, qw(.. build-dir) );
+		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
+			system(qw(cover), qw(-report coveralls));
+		} else {
+			system(qw(cover));
+		}
+	}
+
+	$HARNESS_PERL_SWITCHES = $OLD_HARNESS_PERL_SWITCHES;
 }
 
 1;
