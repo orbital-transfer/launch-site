@@ -973,7 +973,8 @@ EOF
 
 			if [ -f Makefile.PL ]; then
 				command perl Makefile.PL;
-			fi
+			fi;
+			command cpanm --installdeps -nq .;
 			command mingw32-make;
 			blib='-l';
 			if find blib/arch/ -type f ! -empty | grep -q ^; then
