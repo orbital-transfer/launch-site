@@ -5,7 +5,17 @@ function _setup() {
 		echo "Running inside oberthian: $TRAVIS_REPO_SLUG"
 		export OBERTH_PROTOTYPE_DIR=$TRAVIS_BUILD_DIR
 		export OBERTH_TEST_DIR=$(cd .. && pwd)/build/repository
-		git clone --recursive $OBERTH_TEST_REPO $OBERTH_TEST_DIR
+		if [ -z "$OBERTH_TEST_REPO_BRANCH" ]; then
+			echo "Cloning $OBERTH_TEST_REPO @ default branch"
+			git clone --recursive $OBERTH_TEST_REPO $OBERTH_TEST_DIR
+		else
+			echo "Cloning $OBERTH_TEST_REPO @ $OBERTH_TEST_REPO_BRANCH"
+			git clone \
+				--recursive \
+				-b $OBERTH_TEST_REPO_BRANCH \
+				$OBERTH_TEST_REPO \
+				$OBERTH_TEST_DIR
+		fi
 	else
 		echo "Running outside oberthian: $TRAVIS_REPO_SLUG"
 		export OBERTH_PROTOTYPE_DIR=$(cd .. && pwd)/external/oberth-manoeuvre/oberth-prototype

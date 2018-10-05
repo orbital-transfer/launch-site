@@ -3,8 +3,18 @@ function _Setup {
 		echo "Running inside oberthian: $Env:APPVEYOR_PROJECT_SLUG"
 		$Env:OBERTH_PROTOTYPE_DIR=$Env:APPVEYOR_BUILD_FOLDER
 		$Env:OBERTH_TEST_DIR=(Join-Path ([System.IO.Path]::GetFullPath("$(pwd)/..")) 'build\repository')
-		echo "Cloning $Env:OBERTH_TEST_REPO"
-		git clone --recursive $Env:OBERTH_TEST_REPO $Env:OBERTH_TEST_DIR
+
+		if ( [string]::IsNullOrEmpty($Env:OBERTH_TEST_REPO_BRANCH) ) {
+			echo "Cloning $Env:OBERTH_TEST_REPO @ default branch"
+			git clone --recursive $Env:OBERTH_TEST_REPO $Env:OBERTH_TEST_DIR
+		} else {
+			echo "Cloning $Env:OBERTH_TEST_REPO @ $Env:OBERTH_TEST_REPO_BRANCH"
+			git clone `
+				--recursive `
+				-b $Env:OBERTH_TEST_REPO_BRANCH `
+				$Env:OBERTH_TEST_REPO `
+				$Env:OBERTH_TEST_DIR
+		}
 	} else {
 		echo "Running outside oberthian: $Env:APPVEYOR_PROJECT_SLUG"
 		$Env:OBERTH_PROTOTYPE_DIR=(Join-Path ([System.IO.Path]::GetFullPath("$(pwd)/..")) 'external\oberth-manoeuvre\oberth-prototype')
