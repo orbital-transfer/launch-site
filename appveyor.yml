@@ -1,7 +1,9 @@
 version: 1.0.{build}
 
 environment:
-  OBERTH_TEST_REPO: https://github.com/project-renard/curie.git
+  matrix:
+  - OBERTH_TEST_REPO: https://github.com/project-renard/curie.git
+    OBERTH_TEST_REPO_BRANCH: master
 
 cache:
   # cache local::lib
