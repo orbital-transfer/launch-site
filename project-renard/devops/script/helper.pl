@@ -247,6 +247,8 @@ EOF
 sub stage_install {
 	my ($system, $current_repo) = @_;
 
+	$system->repo_install_native($current_repo);
+
 	my $deps = $current_repo->cpanfile_git_data;
 	my @keys = keys %$deps;
 	for my $module_name (@keys) {
@@ -261,7 +263,6 @@ sub stage_install {
 		stage_install($system, $repo);
 	}
 
-	$system->repo_install_native($current_repo);
 	$system->repo_install_perl($current_repo);
 }
 
