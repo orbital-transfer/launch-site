@@ -81,7 +81,9 @@ method _env() {
 method install() {
 	$self->_env;
 
-	system(qw(cpm install -L), $self->config->lib_dir, qw(local::lib));
+	unless( $self->config->cpan_global_install ) {
+		system(qw(cpm install -L), $self->config->lib_dir, qw(local::lib));
+	}
 
 	$self->config->platform->_install;
 

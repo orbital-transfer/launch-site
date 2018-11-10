@@ -36,11 +36,35 @@ method _run_with_build_perl($code) {
 	@return;
 }
 
+method _install_perl_deps_cpanm_dir_arg() {
+	my $global = $self->config->cpan_global_install;
+
+	@{ $global ? [] : [ qw(-L), $self->config->lib_dir ] };
+}
+
+method install_perl_build( @dists ) {
+	my $global = $self->config->cpan_global_install;
+	system(qw(cpm install),
+		@{ $global ? [ qw(-g) ] : [ qw(-L), $self->config->build_tools_dir ] },
+		@dists);
+	system(qw(cpanm -qn),
+		@{ $global ? [] : [ qw(-L), $self->config->build_tools_dir ] },
+		@dists);
+}
+
+method install_perl_deps( @dists ) {
+	my $global = $self->config->cpan_global_install;
+	system(qw(cpm install),
+		@{ $global ? [ qw(-g) ] : [ qw(-L), $self->config->lib_dir ] },
+		@dists);
+	system(qw(cpanm -qn),
+		$self->_install_perl_deps_cpanm_dir_arg,
+		@dists);
+}
+
 method _install_dzil() {
 	unless( which 'dzil' ) {
-		system(qw(cpm install),
-			qw(-L ), $self->config->build_tools_dir,
-			qw(Dist::Zilla));
+		$self->install_perl_build(qw(Dist::Zilla));
 	}
 }
 
@@ -58,12 +82,7 @@ method _get_dzil_authordeps() {
 method _install_dzil_authordeps() {
 	my @dzil_authordeps = $self->_get_dzil_authordeps;
 	if( @dzil_authordeps ) {
-		system(qw(cpm install),
-			qw(-L), $self->config->build_tools_dir,
-			@dzil_authordeps);
-		system(qw(cpanm -qn),
-			qw(-L), $self->config->build_tools_dir,
-			@dzil_authordeps);
+		$self->install_perl_build( @dzil_authordeps );
 	}
 }
 
@@ -88,14 +107,8 @@ method _get_dzil_listdeps() {
 
 method _install_dzil_listdeps() {
 	my @dzil_deps = $self->_get_dzil_listdeps;
-	my $global = 0;
 	if( @dzil_deps ) {
-		system(qw(cpm install),
-			( $global ? qw(-g) : qw(-L), $self->config->lib_dir ),
-			@dzil_deps);
-		system(qw(cpanm -qn),
-			( $global ? () : qw(-L), $self->config->lib_dir ),
-			@dzil_deps);
+		$self->install_perl_deps(@dzil_deps);
 	}
 
 }
@@ -108,7 +121,7 @@ method _install_dzil_build() {
 	use autodie qw(system);
 	system(qw(cpanm -qn),
 		qw(--installdeps),
-		qw(-L), $self->config->lib_dir,
+		$self->_install_perl_deps_cpanm_dir_arg,
 		qw(../build-dir) );
 }
 
@@ -154,7 +167,7 @@ method install() {
 	});
 	system(qw(cpanm --notest),
 		qw(--no-man-pages),
-		qw(-L), $self->config->lib_dir,
+		$self->_install_perl_deps_cpanm_dir_arg,
 		qw(../build-dir) );
 }
 
@@ -174,7 +187,7 @@ method run_test() {
 		# GH#164 <https://github.com/pjcj/Devel--Cover/issues/164>.
 		system(qw(cpanm --notest),
 			qw(--no-man-pages),
-			qw(-L), $self->config->lib_dir,
+			$self->_install_perl_deps_cpanm_dir_arg,
 			qw(Devel::Cover~1.31) );
 
 		$HARNESS_PERL_SWITCHES .= " -MDevel::Cover";
@@ -182,7 +195,7 @@ method run_test() {
 		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
 			system(qw(cpanm --notest),
 				qw(--no-man-pages),
-				qw(-L), $self->config->lib_dir,
+				$self->_install_perl_deps_cpanm_dir_arg,
 				qw(Devel::Cover::Report::Coveralls) );
 		}
 	}
@@ -190,7 +203,7 @@ method run_test() {
 	system(qw(cpanm --test-only),
 		qw(--verbose),
 		qw(--no-man-pages),
-		qw(-L), $self->config->lib_dir,
+		$self->_install_perl_deps_cpanm_dir_arg,
 		qw(./build-dir) );
 
 	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
