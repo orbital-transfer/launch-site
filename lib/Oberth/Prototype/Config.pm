@@ -7,6 +7,7 @@ use Mu;
 use Oberth::Common::Setup;
 use Path::Tiny;
 use FindBin;
+use Env qw($OBERTH_GLOBAL_INSTALL);
 
 has build_tools_dir => (
 	is => 'ro',
@@ -28,6 +29,13 @@ has external_dir => (
 has platform => (
 	is => 'ro',
 	required => 1,
+);
+
+has cpan_global_install => (
+	is => 'ro',
+	default => sub {
+		my $global = $OBERTH_GLOBAL_INSTALL // 0;
+	},
 );
 
 1;
