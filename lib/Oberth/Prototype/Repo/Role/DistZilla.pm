@@ -12,7 +12,7 @@ use File::chdir;
 
 use Env qw(@PERL5LIB $HARNESS_PERL_SWITCHES $OBERTH_COVERAGE);
 
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 use Oberth::Prototype::System::Debian::Meson;
 
 method _env() {

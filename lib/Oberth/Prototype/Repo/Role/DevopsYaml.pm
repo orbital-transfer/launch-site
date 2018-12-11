@@ -5,7 +5,7 @@ package Oberth::Prototype::Repo::Role::DevopsYaml;
 use Mu::Role;
 use YAML;
 
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 
 lazy devops_config_path => method() {
 	File::Spec->catfile( $self->directory, qw(maint devops.yml) );

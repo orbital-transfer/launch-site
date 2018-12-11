@@ -1,9 +1,9 @@
-[submodule "vendor/p5-Oberth"]
-	path = vendor/p5-Oberth
-	url = https://github.com/oberth-manoeuvre/p5-Oberth.git
-[submodule "vendor/p5-Oberth-VCS-Git"]
-	path = vendor/p5-Oberth-VCS-Git
-	url = https://github.com/oberth-manoeuvre/p5-Oberth-VCS-Git.git
+[submodule "vendor/p5-Oberth-Manoeuvre"]
+	path = vendor/p5-Oberth-Manoeuvre
+	url = https://github.com/oberth-manoeuvre/p5-Oberth-Manoeuvre.git
+[submodule "vendor/p5-Oberth-Block-VCS-Git"]
+	path = vendor/p5-Oberth-Block-VCS-Git
+	url = https://github.com/oberth-manoeuvre/p5-Oberth-Block-VCS-Git.git
 [submodule "vendor-external/cpm"]
 	path = vendor-external/cpm
 	url = https://github.com/skaji/cpm.git

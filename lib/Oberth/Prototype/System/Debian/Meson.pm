@@ -3,7 +3,7 @@ package Oberth::Prototype::System::Debian::Meson;
 # ABSTRACT: Install and setup meson build system
 
 use Mu;
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 use Env qw(@PATH @PYTHONPATH);
 
 method _env() {

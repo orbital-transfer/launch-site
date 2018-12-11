@@ -3,7 +3,7 @@ package Oberth::Prototype::System::Debian;
 # ABSTRACT: Debian-based system
 
 use Mu;
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 use Oberth::Prototype::System::Debian::Meson;
 
 use Env qw($DISPLAY);

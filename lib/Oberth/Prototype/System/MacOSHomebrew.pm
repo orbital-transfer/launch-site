@@ -3,7 +3,7 @@ package Oberth::Prototype::System::MacOSHomebrew;
 # ABSTRACT: macOS with homebrew
 
 use Mu;
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 use IPC::System::Simple ();
 
 use Env qw(@PATH @PKG_CONFIG_PATH $ARCHFLAGS);

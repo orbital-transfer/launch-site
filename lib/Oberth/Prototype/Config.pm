@@ -4,7 +4,7 @@ package Oberth::Prototype::Config;
 
 use Mu;
 
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 use Path::Tiny;
 use FindBin;
 use Env qw($OBERTH_GLOBAL_INSTALL);

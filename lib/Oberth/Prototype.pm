@@ -35,7 +35,7 @@ use ShellQuote::Any;
 use File::Path qw(make_path);
 use File::Which;
 
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 
 use Oberth::Prototype::Config;
 use Oberth::Prototype::Repo;

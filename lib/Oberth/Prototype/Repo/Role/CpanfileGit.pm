@@ -4,7 +4,7 @@ package Oberth::Prototype::Repo::Role::CpanfileGit;
 
 use Mu::Role;
 
-use Oberth::Common::Setup;
+use Oberth::Manoeuvre::Common::Setup;
 
 use File::Spec;
 use Module::CPANfile;

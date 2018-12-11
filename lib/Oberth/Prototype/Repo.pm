@@ -4,8 +4,8 @@ package Oberth::Prototype::Repo;
 
 use Mu;
 
-use Oberth::Common::Setup;
-use Oberth::Common::Types qw(AbsDir);
+use Oberth::Manoeuvre::Common::Setup;
+use Oberth::Manoeuvre::Common::Types qw(AbsDir);
 
 has directory => (
 	is => 'ro',
