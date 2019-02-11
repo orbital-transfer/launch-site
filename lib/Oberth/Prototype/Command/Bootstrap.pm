@@ -26,6 +26,7 @@ sub new {
 	my ($package) = @_;
 
 	my $dir;
+	my $global = 0;
 	my $command;
 
 	my $commands_re = qr/^(@{[ join("|", keys %{ {COMMANDS()} }) ]})$/;
@@ -34,6 +35,8 @@ sub new {
 		my $arg = shift @ARGV;
 		if( $arg eq '--dir' ) {
 			$dir = shift @ARGV;
+		} elsif( $arg eq '--global' ) {
+			$global = 1;
 		} elsif( $arg =~ $commands_re ) {
 			$command = $arg;
 		}
@@ -43,23 +46,27 @@ sub new {
 
 	my $oberthian_dir = realpath( File::Spec->rel2abs(File::Spec->catfile($FindBin::Bin, '..')) );
 
-	$dir = File::Spec->catfile( $oberthian_dir, qw(extlib)) unless $dir;
+	my ($bin_dir, $lib_dir);
+	if( ! $global ) {
+		$dir = File::Spec->catfile( $oberthian_dir, qw(extlib)) unless $dir;
 
-	my $bin_dir = File::Spec->catfile($dir, qw(bin));
-	make_path $bin_dir;
+		$bin_dir = File::Spec->catfile($dir, qw(bin));
+		make_path $bin_dir;
 
-	unshift @PATH, $bin_dir;
+		unshift @PATH, $bin_dir;
 
-	my $lib_dir = File::Spec->catfile($dir, qw(lib));
-	make_path $lib_dir;
+		$lib_dir = File::Spec->catfile($dir, qw(lib));
+		make_path $lib_dir;
 
-	unshift @PERL5LIB, File::Spec->catfile( $dir, qw(lib perl5) );
-	unshift @PERL5LIB, File::Spec->catfile( $dir, qw(lib perl5), $Config{archname});
+		unshift @PERL5LIB, File::Spec->catfile( $dir, qw(lib perl5) );
+		unshift @PERL5LIB, File::Spec->catfile( $dir, qw(lib perl5), $Config{archname});
+	}
 
 	bless {
 		command => $command,
 		oberthian_dir => $oberthian_dir,
 		dir => $dir,
+		global => $global,
 		bin_dir => $bin_dir,
 		lib_dir => $lib_dir,
 		vendor_dir => File::Spec->catfile($oberthian_dir, qw(vendor)),
@@ -97,7 +104,7 @@ sub _cpm {
 
 	system( qw(cpm), qw(install),
 		qw(--verbose),
-		qw(-L), $self->{dir},
+		@{ $self->{global} ? [ qw(-g) ] : [ qw(-L), $self->{dir}, ] },
 		@args,
 	);
 }
@@ -107,7 +114,7 @@ sub _cpanm {
 
 	system( qw(cpanm),
 		qw(-nq),
-		qw(-L), $self->{dir},
+		@{ $self->{global} ? [] : [ qw(-L), $self->{dir}, ] },
 		@args,
 	);
 }
