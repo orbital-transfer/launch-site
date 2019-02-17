@@ -113,16 +113,20 @@ method _install_dzil_listdeps() {
 
 }
 
+lazy dzil_build_dir => method() {
+	qq(../build-dir);
+};
+
 method _install_dzil_build() {
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ../build-dir) );
+		system(qw(dzil build --in), $self->dzil_build_dir );
 	});
 	use autodie qw(system);
 	system(qw(cpanm -qn),
 		qw(--installdeps),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		qw(../build-dir) );
+		$self->dzil_build_dir );
 }
 
 method _dzil_has_plugin_test_podspelling() {
@@ -167,19 +171,19 @@ method install() {
 	$self->_env;
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ../build-dir) );
+		system(qw(dzil build --in), $self->dzil_build_dir );
 	});
 	system(qw(cpanm --notest),
 		qw(--no-man-pages),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		qw(../build-dir) );
+		$self->dzil_build_dir );
 }
 
 method run_test() {
 	$self->_env;
 	local $CWD = $self->directory;
 	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ./build-dir) );
+		system(qw(dzil build --in), $self->dzil_build_dir );
 	});
 
 	use autodie qw(system);
@@ -208,10 +212,10 @@ method run_test() {
 		qw(--verbose),
 		qw(--no-man-pages),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		qw(./build-dir) );
+		$self->dzil_build_dir );
 
 	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
-		local $CWD = File::Spec->catfile( $self->directory, qw(build-dir) );
+		local $CWD = File::Spec->catfile( $self->directory, $self->dzil_build_dir );
 		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
 			system(qw(cover), qw(-report coveralls));
 		} else {
