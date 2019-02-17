@@ -15,9 +15,13 @@ method _env() {
 
 method setup() {
 	$self->_env;
-	system(qw(apt-get install -y --no-install-recommends python3-pip));
-	system(qw(pip3 install --user -U setuptools));
-	system(qw(pip3 install --user -U meson));
+	if( $> != 0 ) {
+		warn "Not installing meson";
+	} else {
+		system(qw(apt-get install -y --no-install-recommends python3-pip));
+		system(qw(pip3 install --user -U setuptools));
+		system(qw(pip3 install --user -U meson));
+	}
 }
 
 1;

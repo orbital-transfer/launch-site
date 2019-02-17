@@ -25,13 +25,24 @@ method _pre_run() {
 }
 
 method _install() {
-	system(qw(apt-get install -y --no-install-recommends xvfb xauth));
+	my @packages = qw(xvfb xauth);
+
+	if( $> != 0 ) {
+		warn "Not installing @packages";
+	} else {
+		system(qw(apt-get install -y --no-install-recommends), @packages);
+	}
 }
 
 method install_packages($repo) {
 	my @packages = @{ $repo->debian_get_packages };
+
 	if( @packages ) {
-		system(qw(apt-get install -y --no-install-recommends), @packages );
+		if( $> != 0 ) {
+			warn "Not installing @packages";
+		} else {
+			system(qw(apt-get install -y --no-install-recommends), @packages );
+		}
 	}
 
 	if( grep { $_ eq 'meson' } @packages ) {
