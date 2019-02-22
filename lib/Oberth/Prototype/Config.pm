@@ -16,7 +16,7 @@ has build_tools_dir => (
 
 has lib_dir => (
 	is => 'ro',
-	default => sub { path('local')->absolute },
+	default => sub { path('../local')->absolute },
 );
 
 has external_dir => (
