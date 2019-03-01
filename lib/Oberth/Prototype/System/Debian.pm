@@ -5,8 +5,22 @@ package Oberth::Prototype::System::Debian;
 use Mu;
 use Oberth::Manoeuvre::Common::Setup;
 use Oberth::Prototype::System::Debian::Meson;
+use Oberth::Prototype::Runner::Default;
+
+use Oberth::Prototype::PackageManager::APT;
+use Oberth::Prototype::RepoPackage::APT;
 
 use Env qw($DISPLAY);
+
+lazy runner => method() {
+	Oberth::Prototype::Runner::Default->new;
+};
+
+lazy apt => method() {
+	Oberth::Prototype::PackageManager::APT->new(
+		runner => $self->runner
+	);
+};
 
 method _env() {
 	$DISPLAY=':99.0';
@@ -25,30 +39,26 @@ method _pre_run() {
 }
 
 method _install() {
-	my @packages = qw(xvfb xauth);
-
-	if( $> != 0 ) {
-		warn "Not installing @packages";
-	} else {
-		system(qw(apt-get install -y --no-install-recommends), @packages);
-	}
+	my @packages = map {
+		Oberth::Prototype::RepoPackage::APT->new( name => $_ )
+	} qw(xvfb xauth);
+	$self->runner->system(
+		$self->apt->install_packages_command(@packages)
+	);
 }
 
 method install_packages($repo) {
-	my @packages = @{ $repo->debian_get_packages };
+	my @packages = map {
+		Oberth::Prototype::RepoPackage::APT->new( name => $_ )
+	} @{ $repo->debian_get_packages };
 
-	if( @packages ) {
-		if( $> != 0 ) {
-			warn "Not installing @packages";
-		} else {
-			system(qw(apt-get install -y --no-install-recommends), @packages );
-		}
-	}
+	$self->runner->system(
+		$self->apt->install_packages_command(@packages)
+	) if @packages;
 
-	if( grep { $_ eq 'meson' } @packages ) {
+	if( grep { $_->name eq 'meson' } @packages ) {
 		Oberth::Prototype::System::Debian::Meson->setup;
 	}
 }
-
 
 1;

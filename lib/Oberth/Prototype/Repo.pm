@@ -19,4 +19,8 @@ has config => (
 	required => 1,
 );
 
+lazy runner => method() {
+	$self->config->platform->runner;
+};
+
 1;

@@ -148,12 +148,15 @@ method _dzil_has_plugin_test_podspelling() {
 method _install_dzil_spell_check_if_needed() {
 	return unless $^O eq 'linux';
 
+	require Oberth::Prototype::RepoPackage::APT;
 	if( $self->_dzil_has_plugin_test_podspelling ) {
-		if( $> != 0 ) {
-			warn "Not installing aspell";
-		} else {
-			system(qw(apt-get install -y --no-install-recommends aspell aspell-en));
-		}
+		$self->runner->system(
+			$self->config->platform->apt->install_packages_command(
+				map {
+					Oberth::Prototype::RepoPackage::APT->new( name => $_ )
+				} qw(aspell aspell-en)
+			)
+		);
 	}
 }
 
