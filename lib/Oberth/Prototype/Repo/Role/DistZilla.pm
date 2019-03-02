@@ -64,7 +64,7 @@ method install_perl_deps( @dists ) {
 
 method _install_dzil() {
 	unless( which 'dzil' ) {
-		$self->install_perl_build(qw(Dist::Zilla));
+		$self->install_perl_build(qw(Net::SSLeay Dist::Zilla));
 	}
 }
 
