@@ -5,16 +5,12 @@ package Oberth::Prototype::System::Debian;
 use Mu;
 use Oberth::Manoeuvre::Common::Setup;
 use Oberth::Prototype::System::Debian::Meson;
-use Oberth::Prototype::Runner::Default;
 
 use Oberth::Prototype::PackageManager::APT;
 use Oberth::Prototype::RepoPackage::APT;
 
-use Env qw($DISPLAY);
-
-lazy runner => method() {
-	Oberth::Prototype::Runner::Default->new;
-};
+use Oberth::Prototype::EnvironmentVariables;
+use Object::Util;
 
 lazy apt => method() {
 	Oberth::Prototype::PackageManager::APT->new(
@@ -22,14 +18,20 @@ lazy apt => method() {
 	);
 };
 
-method _env() {
-	$DISPLAY=':99.0';
-}
+lazy x11_display => method() {
+	':99.0';
+};
+
+lazy environment => method() {
+	Oberth::Prototype::EnvironmentVariables
+		->new
+		->$_tap( 'set_string', 'DISPLAY', $self->x11_display );
+};
 
 method _prepare_x11() {
 	#system(qw(sh -e /etc/init.d/xvfb start));
 	unless( fork ) {
-		exec(qw(Xvfb), $DISPLAY);
+		exec(qw(Xvfb), $self->x11_display);
 	}
 	sleep 3;
 }
@@ -60,5 +62,12 @@ method install_packages($repo) {
 		Oberth::Prototype::System::Debian::Meson->setup;
 	}
 }
+
+with qw(
+	Oberth::Prototype::System::Role::Config
+	Oberth::Prototype::System::Role::DefaultRunner
+	Oberth::Prototype::System::Role::PerlPathCurrent
+	Oberth::Prototype::System::Role::Perl
+);
 
 1;

@@ -6,21 +6,28 @@ use Mu;
 use Oberth::Manoeuvre::Common::Setup;
 use IPC::System::Simple ();
 
-use Env qw(@PATH @PKG_CONFIG_PATH $ARCHFLAGS);
+use Oberth::Prototype::EnvironmentVariables;
+use Oberth::Prototype::Runner::Default;
+use aliased 'Oberth::Prototype::Runnable';
 
-method _env() {
+lazy environment => method() {
+	my $env = Oberth::Prototype::EnvironmentVariables
+		->new;
+
 	# Set up for OpenSSL (linking and utilities)
-	unshift @PKG_CONFIG_PATH, '/usr/local/opt/openssl/lib/pkgconfig';
-	unshift @PATH, '/usr/local/opt/openssl/bin';
+	$env->prepend_path_list( 'PKG_CONFIG_PATH', [ '/usr/local/opt/openssl/lib/pkgconfig' ]  );
+	$env->prepend_path_list( 'PATH', [ '/usr/local/opt/openssl/bin' ]  );
 
 	# Set up for libffi linking
-	unshift @PKG_CONFIG_PATH, '/usr/local/opt/libffi/lib/pkgconfig';
+	$env->prepend_path_list( 'PKG_CONFIG_PATH', [ '/usr/local/opt/libffi/lib/pkgconfig' ]  );
 
 	# Add Homebrew gettext utilities to path
-	unshift @PATH, '/usr/local/opt/gettext/bin';
+	$env->prepend_path_list( 'PATH', [ '/usr/local/opt/gettext/bin' ]  );
 
-	$ARCHFLAGS='-arch x86_64';
-}
+	$env->set_string('ARCHFLAGS', '-arch x86_64' );
+
+	$env;
+};
 
 method _pre_run() {
 
@@ -28,18 +35,36 @@ method _pre_run() {
 
 method _install() {
 	say STDERR "Updating homebrew";
-	system(qw(brew update));
+	$self->runner->system(
+		Runnable->new(
+			command => [ qw(brew update) ]
+		)
+	);
 
 	# Set up for X11 support
 	say STDERR "Installing xquartz homebrew cask for X11 support";
-	system(qw(brew tap Caskroom/cask));
-	system(qw(brew install Caskroom/cask/xquartz));
+	$self->runner->system(
+		Runnable->new(
+			command => $_
+		)
+	) for (
+		[ qw(brew tap Caskroom/cask) ],
+		[ qw(brew install Caskroom/cask/xquartz) ]
+	);
 
 	# Set up for pkg-config
-	system(qw(brew install pkg-config));
+	$self->runner->system(
+		Runnable->new(
+			command => [ qw(brew install pkg-config) ]
+		)
+	);
 
 	# Set up for OpenSSL (linking and utilities)
-	system(qw(brew install openssl));
+	$self->runner->system(
+		Runnable->new(
+			command => [ qw(brew install openssl) ]
+		)
+	);
 }
 
 method install_packages($repo) {
@@ -69,5 +94,12 @@ method install_packages($repo) {
 		}
 	}
 }
+
+with qw(
+	Oberth::Prototype::System::Role::Config
+	Oberth::Prototype::System::Role::DefaultRunner
+	Oberth::Prototype::System::Role::PerlPathCurrent
+	Oberth::Prototype::System::Role::Perl
+);
 
 1;

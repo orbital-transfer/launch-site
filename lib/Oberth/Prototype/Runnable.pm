@@ -5,12 +5,14 @@ package Oberth::Prototype::Runnable;
 use Mu;
 use Oberth::Manoeuvre::Common::Setup;
 use Oberth::Manoeuvre::Common::Types qw(ArrayRef Str InstanceOf Bool);
+use Types::TypeTiny qw(StringLike);
 
 use Oberth::Prototype::EnvironmentVariables;
 
 has command => (
 	is => 'ro',
-	isa => ArrayRef[Str],
+	isa => ArrayRef[StringLike],
+	coerce => 1,
 	required => 1,
 );
 
