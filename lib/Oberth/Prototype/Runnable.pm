@@ -4,7 +4,9 @@ package Oberth::Prototype::Runnable;
 
 use Mu;
 use Oberth::Manoeuvre::Common::Setup;
-use Oberth::Manoeuvre::Common::Types qw(ArrayRef Str HashRef Bool);
+use Oberth::Manoeuvre::Common::Types qw(ArrayRef Str InstanceOf Bool);
+
+use Oberth::Prototype::EnvironmentVariables;
 
 has command => (
 	is => 'ro',
@@ -14,8 +16,8 @@ has command => (
 
 has environment => (
 	is => 'ro',
-	isa => HashRef,
-	default => sub { +{} },
+	isa => InstanceOf['Oberth::Prototype::EnvironmentVariables'],
+	default => sub { Oberth::Prototype::EnvironmentVariables->new },
 );
 
 has admin_privilege => (

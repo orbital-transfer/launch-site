@@ -13,10 +13,7 @@ method system( $runnable ) {
 		return;
 	}
 
-	local %ENV = %ENV;
-	for my $var ( keys %{ $runnable->environment } ) {
-		$ENV{$var} = $runnable->environment->{$var};
-	}
+	local %ENV = %{ $runnable->environment->environment_hash };
 	use autodie qw(:system);
 	system( @{ $runnable->command } );
 }
