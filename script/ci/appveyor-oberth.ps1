@@ -1,4 +1,5 @@
 function _Setup {
+	cinst StrawberryPerl
 	if( Test-Path $Env:APPVEYOR_BUILD_FOLDER\bin\oberthian ) {
 		git submodule update --init --recursive
 		echo "Running inside oberthian: $Env:APPVEYOR_PROJECT_SLUG"
@@ -35,6 +36,8 @@ function _Setup {
 
 function appveyor-oberth {
 	param( [string]$command )
+	# Run under Strawberry Perl because default ActiveState Perl has broken pl2bat
+	$Env:PATH="C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;$Env:PATH"
 	cd $Env:OBERTH_TEST_DIR
 	switch( $command ) {
 		"install" {
