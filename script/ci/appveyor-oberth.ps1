@@ -1,5 +1,6 @@
 function _Setup {
 	if( Test-Path $Env:APPVEYOR_BUILD_FOLDER\bin\oberthian ) {
+		git submodule update --init --recursive
 		echo "Running inside oberthian: $Env:APPVEYOR_PROJECT_SLUG"
 		$Env:OBERTH_PROTOTYPE_DIR=$Env:APPVEYOR_BUILD_FOLDER
 		$Env:OBERTH_TEST_DIR=(Join-Path ([System.IO.Path]::GetFullPath("$(pwd)/..")) 'build\repository')
