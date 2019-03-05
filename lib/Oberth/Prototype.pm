@@ -80,13 +80,13 @@ method _env() {
 method install() {
 	$self->_env;
 
+	$self->platform->_install;
+
 	unless( $self->config->cpan_global_install ) {
 		$self->platform->build_perl->script(
 			qw(cpm install -L), $self->config->lib_dir, qw(local::lib)
 		)
 	}
-
-	$self->platform->_install;
 
 	$self->platform->_pre_run;
 
