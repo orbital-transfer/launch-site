@@ -42,6 +42,7 @@ use Oberth::Prototype::Repo;
 
 use Oberth::Prototype::System::Debian;
 use Oberth::Prototype::System::MacOSHomebrew;
+use Oberth::Prototype::System::AppVeyor;
 
 has repo_url_to_repo => (
 	is => 'ro',
@@ -53,6 +54,8 @@ lazy platform => method() {
 		my $system;
 		if(  $^O eq 'darwin' && which('brew') ) {
 			$system = Oberth::Prototype::System::MacOSHomebrew->new( @opt );
+		} elsif( $^O eq 'MSWin32' ) {
+			$system = Oberth::Prototype::System::AppVeyor->new( @opt );
 		} else {
 			$system = Oberth::Prototype::System::Debian->new( @opt );
 		}

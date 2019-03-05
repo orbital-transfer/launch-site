@@ -218,6 +218,9 @@ sub run {
 
 sub get_exit_status {
 	my ($self, $command, @args) = @_;
+	if( $^O eq 'MSWin32') {
+		return system( $command, @args );
+	}
 	my ($wtr, $rdr, $err);
 	my $child_exit_status = 1;
 	eval {
@@ -255,6 +258,7 @@ sub install_self_contained_cpm {
 
 	copy( File::Spec->catfile($self->{vendor_external_dir}, qw(cpm cpm)),  $self->{cpm} ) or die "Could not copy cpm: $!";
 	chmod 0755, $self->{cpm};
+	system( qw(pl2bat), $self->{cpm} ) if $^O eq 'MSWin32';
 	die "Could not install cpm: $!" unless $self->has_cpm;
 }
 

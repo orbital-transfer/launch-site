@@ -84,7 +84,14 @@ method script( $script, @arguments ) {
 
 method which_script( $script ) {
 	local $ENV{PATH} = $self->environment->environment_hash->{PATH};
-	my $script_path = which( $script ) or die "Could not find $script in $ENV{PATH}";
+	my $script_path = which( $script );
+
+	if( $^O eq 'MSWin32' ) {
+		my $new_path = $script_path =~ s/\.bat$//ir;
+		$script_path = $new_path if -f $new_path;
+	}
+
+	$script_path or die "Could not find $script in $ENV{PATH}";
 }
 
 with qw(Oberth::Prototype::Role::HasRunner);
