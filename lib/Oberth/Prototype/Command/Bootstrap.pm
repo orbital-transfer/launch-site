@@ -85,6 +85,7 @@ sub run_auto {
 sub run_setup {
 	my ($self) = @_;
 
+	$self->{cpm} = 'cpm';
 	$self->install_self_contained_cpm unless $self->has_cpm;
 
 	$self->_cpm(
@@ -102,7 +103,7 @@ sub run_setup {
 sub _cpm {
 	my ($self, @args) = @_;
 
-	system( $^X, qw(-S), qw(cpm), qw(install),
+	system( $^X, qw(-S), $self->{cpm}, qw(install),
 		qw(--verbose),
 		@{ $self->{global} ? [ qw(-g) ] : [ qw(-L), $self->{dir}, ] },
 		@args,
@@ -248,7 +249,7 @@ sub has_cpanm {
 
 sub has_cpm {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status( $^X, qw(-S), qw(cpm --version));
+	return 0 == $self->get_exit_status( $^X, qw(-S), $self->{cpm}, qw(--version));
 }
 
 sub install_self_contained_cpm {
@@ -258,7 +259,7 @@ sub install_self_contained_cpm {
 
 	copy( File::Spec->catfile($self->{vendor_external_dir}, qw(cpm cpm)),  $self->{cpm} ) or die "Could not copy cpm: $!";
 	chmod 0755, $self->{cpm};
-	system( qw(pl2bat), $self->{cpm} ) if $^O eq 'MSWin32';
+	#system( $^X, qw(-S), qw(pl2bat), $self->{cpm} ) if $^O eq 'MSWin32';
 	die "Could not install cpm: $!" unless $self->has_cpm;
 }
 
