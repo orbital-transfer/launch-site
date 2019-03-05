@@ -134,7 +134,10 @@ method _install() {
 method _install_perl() {
 	$self->pacman(qw(mingw-w64-x86_64-perl));
 	$self->build_perl->script( 'pl2bat', $self->build_perl->which_script('pl2bat') );
-	$self->build_perl->script( qw(cpan App::cpanminus) );
+	{
+		local $ENV{PERL_MM_USE_DEFAULT} = 1;
+		$self->build_perl->script( qw(cpan App::cpanminus) );
+	}
 	$self->build_perl->script( qw(cpanm --notest App::cpm ExtUtils::MakeMaker Module::Build App::pmuninstall) );
 	$self->build_perl->script( qw(cpanm --notest Win32::Process IO::Socket::SSL) );
 }
