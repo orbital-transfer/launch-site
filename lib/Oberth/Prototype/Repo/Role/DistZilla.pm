@@ -35,6 +35,10 @@ lazy test_environment => method() {
 	my $env = Oberth::Prototype::EnvironmentVariables->new(
 		parent => $self->environment
 	);
+
+	$env->set_string('AUTHOR_TESTING', 1 );
+
+	$env;
 };
 
 method _install_perl_deps_cpanm_dir_arg() {
