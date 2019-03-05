@@ -38,6 +38,10 @@ lazy test_environment => method() {
 
 	$env->set_string('AUTHOR_TESTING', 1 );
 
+	# Accessibility <https://github.com/oberth-manoeuvre/oberth-prototype/issues/30>
+	$env->set_string('QT_ACCESSIBILITY', 0 );
+	$env->set_string('NO_AT_BRIDGE', 1 );
+
 	$env;
 };
 
