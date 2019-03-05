@@ -38,17 +38,17 @@ function appveyor-oberth {
 	cd $Env:OBERTH_TEST_DIR
 	switch( $command ) {
 		"install" {
-			perl $Env:OBERTH_PROTOTYPE_DIR\maint\appveyor-ci\run install;
+			perl $Env:OBERTH_PROTOTYPE_DIR\bin\oberthian bootstrap auto;
+			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
+			perl $Env:OBERTH_PROTOTYPE_DIR\bin\oberthian;
 			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
 			break
 		}
 		"build-script" {
-			perl $Env:OBERTH_PROTOTYPE_DIR\maint\appveyor-ci\run build;
-			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
 			break
 		}
 		"test-script" {
-			perl $Env:OBERTH_PROTOTYPE_DIR\maint\appveyor-ci\run test;
+			perl $Env:OBERTH_PROTOTYPE_DIR\bin\oberthian test;
 			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
 			break
 		}
