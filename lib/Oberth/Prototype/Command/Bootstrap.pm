@@ -102,7 +102,7 @@ sub run_setup {
 sub _cpm {
 	my ($self, @args) = @_;
 
-	system( qw(cpm), qw(install),
+	system( $^X, qw(-S), qw(cpm), qw(install),
 		qw(--verbose),
 		@{ $self->{global} ? [ qw(-g) ] : [ qw(-L), $self->{dir}, ] },
 		@args,
@@ -112,7 +112,7 @@ sub _cpm {
 sub _cpanm {
 	my ($self, @args) = @_;
 
-	system( qw(cpanm),
+	system( $^X, qw(-S), qw(cpanm),
 		qw(-nq),
 		@{ $self->{global} ? [] : [ qw(-L), $self->{dir}, ] },
 		@args,
@@ -238,17 +238,17 @@ sub get_exit_status {
 
 sub has_cpan {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status(qw(cpan -v));
+	return 0 == $self->get_exit_status( $^X, qw(-S), qw(cpan -v));
 }
 
 sub has_cpanm {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status(qw(cpanm -V));
+	return 0 == $self->get_exit_status( $^X, qw(-S), qw(cpanm -V));
 }
 
 sub has_cpm {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status(qw(cpm --version));
+	return 0 == $self->get_exit_status( $^X, qw(-S), qw(cpm --version));
 }
 
 sub install_self_contained_cpm {
