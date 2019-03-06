@@ -14,9 +14,13 @@ has directory => (
 	isa => AbsDir,
 );
 
-has config => (
+has [ qw(config platform) ] => (
 	is => 'ro',
 	required => 1,
 );
+
+lazy runner => method() {
+	$self->platform->runner;
+};
 
 1;

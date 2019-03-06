@@ -1,6 +1,5 @@
 #!/bin/sh
 
-brew install perl
 which perl
 perl -v
 sed -i -e '1 s|^#!perl|#!/usr/bin/env perl|' "$1"

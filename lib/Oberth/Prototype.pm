@@ -3,7 +3,7 @@ use warnings;
 package Oberth::Prototype;
 # ABSTRACT: Command line base for oberthian
 
-use Env qw(@PATH @PERL5LIB);
+use Env qw(@PATH);
 use Config;
 
 use FindBin;
@@ -42,25 +42,29 @@ use Oberth::Prototype::Repo;
 
 use Oberth::Prototype::System::Debian;
 use Oberth::Prototype::System::MacOSHomebrew;
+use Oberth::Prototype::System::AppVeyor;
 
 has repo_url_to_repo => (
 	is => 'ro',
 	default => sub { +{} },
 );
 
+lazy platform => method() {
+		my @opt = ( config => $self->config );
+		my $system;
+		if(  $^O eq 'darwin' && which('brew') ) {
+			$system = Oberth::Prototype::System::MacOSHomebrew->new( @opt );
+		} elsif( $^O eq 'MSWin32' ) {
+			$system = Oberth::Prototype::System::AppVeyor->new( @opt );
+		} else {
+			$system = Oberth::Prototype::System::Debian->new( @opt );
+		}
+};
+
 has config => (
 	is => 'ro',
 	default => sub {
-		my $system;
-		if(  $^O eq 'darwin' && which('brew') ) {
-			$system = Oberth::Prototype::System::MacOSHomebrew->new;
-		} else {
-			$system = Oberth::Prototype::System::Debian->new;
-		}
-		Oberth::Prototype::Config->new(
-			build_tools_dir => BUILD_TOOLS_DIR,
-			platform => $system,
-		);
+		Oberth::Prototype::Config->new();
 	},
 );
 
@@ -69,29 +73,26 @@ lazy repo => method() {
 };
 
 method _env() {
-	unshift @PATH,     File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (BIN_DIRS) };
-	unshift @PERL5LIB, File::Spec->catfile( $self->config->lib_dir, $_ ) for @{ (PERL_LIB_DIRS) };
-
 	my $test_data_repo_dir = $self->clone_git("https://github.com/project-renard/test-data.git");
 	$ENV{RENARD_TEST_DATA_PATH} = $test_data_repo_dir;
-
-	$self->config->platform->_env;
 }
 
 method install() {
 	$self->_env;
 
+	$self->platform->_install;
+
 	unless( $self->config->cpan_global_install ) {
-		system(qw(cpm install -L), $self->config->lib_dir, qw(local::lib));
+		$self->platform->build_perl->script(
+			qw(cpm install -L), $self->config->lib_dir, qw(local::lib)
+		)
 	}
 
-	$self->config->platform->_install;
-
-	$self->config->platform->_pre_run;
+	$self->platform->_pre_run;
 
 	my $repo = $self->repo;
 
-	$self->config->platform->install_packages($repo);
+	$self->platform->install_packages($repo);
 
 	$self->install_recursively($repo, main => 1, native => 1);
 	$self->install_recursively($repo, main => 1, native => 0 );
@@ -102,7 +103,7 @@ method install() {
 method test() {
 	$self->_env;
 
-	$self->config->platform->_pre_run;
+	$self->platform->_pre_run;
 
 	my $repo = $self->repo;
 	$self->test_repo($repo);
@@ -133,7 +134,7 @@ method install_repo($repo, :$native = 0 ) {
 	my $exit = 0;
 
 	if( $native ) {
-		$self->config->platform->install_packages($repo);
+		$self->platform->install_packages($repo);
 	} else {
 		$repo->setup_build;
 		$exit = $repo->install;
@@ -199,6 +200,7 @@ method repo_for_directory($directory) {
 	my $repo = Oberth::Prototype::Repo->new(
 		directory => $directory,
 		config => $self->config,
+		platform => $self->platform,
 	);
 
 	Moo::Role->apply_roles_to_object( $repo, 'Oberth::Prototype::Repo::Role::DistZilla');

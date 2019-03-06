@@ -85,6 +85,7 @@ sub run_auto {
 sub run_setup {
 	my ($self) = @_;
 
+	$self->{cpm} = 'cpm';
 	$self->install_self_contained_cpm unless $self->has_cpm;
 
 	$self->_cpm(
@@ -102,7 +103,7 @@ sub run_setup {
 sub _cpm {
 	my ($self, @args) = @_;
 
-	system( qw(cpm), qw(install),
+	system( $^X, qw(-S), $self->{cpm}, qw(install),
 		qw(--verbose),
 		@{ $self->{global} ? [ qw(-g) ] : [ qw(-L), $self->{dir}, ] },
 		@args,
@@ -112,7 +113,7 @@ sub _cpm {
 sub _cpanm {
 	my ($self, @args) = @_;
 
-	system( qw(cpanm),
+	system( $^X, qw(-S), qw(cpanm),
 		qw(-nq),
 		@{ $self->{global} ? [] : [ qw(-L), $self->{dir}, ] },
 		@args,
@@ -218,6 +219,9 @@ sub run {
 
 sub get_exit_status {
 	my ($self, $command, @args) = @_;
+	if( $^O eq 'MSWin32') {
+		return system( $command, @args );
+	}
 	my ($wtr, $rdr, $err);
 	my $child_exit_status = 1;
 	eval {
@@ -235,17 +239,17 @@ sub get_exit_status {
 
 sub has_cpan {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status(qw(cpan -v));
+	return 0 == $self->get_exit_status( $^X, qw(-S), qw(cpan -v));
 }
 
 sub has_cpanm {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status(qw(cpanm -V));
+	return 0 == $self->get_exit_status( $^X, qw(-S), qw(cpanm -V));
 }
 
 sub has_cpm {
 	my ($self) = @_;
-	return 0 == $self->get_exit_status(qw(cpm --version));
+	return 0 == $self->get_exit_status( $^X, qw(-S), $self->{cpm}, qw(--version));
 }
 
 sub install_self_contained_cpm {
@@ -255,6 +259,7 @@ sub install_self_contained_cpm {
 
 	copy( File::Spec->catfile($self->{vendor_external_dir}, qw(cpm cpm)),  $self->{cpm} ) or die "Could not copy cpm: $!";
 	chmod 0755, $self->{cpm};
+	#system( $^X, qw(-S), qw(pl2bat), $self->{cpm} ) if $^O eq 'MSWin32';
 	die "Could not install cpm: $!" unless $self->has_cpm;
 }
 

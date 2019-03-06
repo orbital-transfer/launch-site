@@ -4,23 +4,45 @@ package Oberth::Prototype::System::Debian::Meson;
 
 use Mu;
 use Oberth::Manoeuvre::Common::Setup;
-use Env qw(@PATH @PYTHONPATH);
+use Oberth::Prototype::EnvironmentVariables;
+use aliased 'Oberth::Prototype::Runnable';
+use Object::Util;
 
-method _env() {
-	chomp( my $py_user_base_bin = `python3 -c "import site, os; print(os.path.join(site.USER_BASE, 'bin'))"` );
-	chomp( my $py_user_site_pypath = `python3 -c "import site; print(site.USER_SITE)"` );
-	unshift @PATH, $py_user_base_bin;
-	unshift @PYTHONPATH, $py_user_site_pypath;
+has runner => (
+	is => 'ro',
+	required => 1,
+);
+
+method environment() {
+	my $py_user_base_bin = $self->runner->capture(
+		Runnable->new( command => [ qw(python3 -c), "import site, os; print(os.path.join(site.USER_BASE, 'bin'))" ] )
+	);
+	chomp $py_user_base_bin;
+
+	my $py_user_site_pypath = $self->runner->capture(
+		Runnable->new( command => [ qw(python3 -c), "import site; print(site.USER_SITE)" ] )
+	);
+	chomp $py_user_site_pypath;
+	Oberth::Prototype::EnvironmentVariables
+		->new
+		->$_tap( 'prepend_path_list', 'PATH', [ $py_user_base_bin ] )
+		->$_tap( 'prepend_path_list', 'PYTHONPATH', [ $py_user_site_pypath ] )
 }
 
 method setup() {
-	$self->_env;
 	if( $> != 0 ) {
 		warn "Not installing meson";
 	} else {
-		system(qw(apt-get install -y --no-install-recommends python3-pip));
-		system(qw(pip3 install --user -U setuptools));
-		system(qw(pip3 install --user -U meson));
+		$self->runner->system(
+			Runnable->new(
+				command => $_,
+				environment => $self->environment,
+			)
+		) for(
+			[ qw(apt-get install -y --no-install-recommends python3-pip) ],
+			[ qw(pip3 install --user -U setuptools) ],
+			[ qw(pip3 install --user -U meson) ],
+		);
 	}
 }
 

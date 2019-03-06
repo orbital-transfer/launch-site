@@ -10,31 +10,40 @@ use Capture::Tiny qw(capture);
 use File::Temp qw(tempdir);
 use File::chdir;
 
-use Env qw(@PERL5LIB $HARNESS_PERL_SWITCHES $OBERTH_COVERAGE);
-
 use Oberth::Manoeuvre::Common::Setup;
 use Oberth::Prototype::System::Debian::Meson;
+use Oberth::Prototype::EnvironmentVariables;
 
-method _env() {
+lazy environment => method() {
+	my $parent = $self->platform->environment;
+	my $env = Oberth::Prototype::EnvironmentVariables->new(
+		parent => $parent
+	);
+
 	my @packages = @{ $self->debian_get_packages };
 	if( grep { $_ eq 'meson' } @packages ) {
-		Oberth::Prototype::System::Debian::Meson->_env;
+		my $meson = Oberth::Prototype::System::Debian::Meson->new(
+			runner => $self->runner
+		);
+		push @{ $env->_commands }, @{ $meson->environment->_commands };
 	}
-}
 
-method _run_with_build_perl($code) {
-	my @OLD_PERL5LIB = @PERL5LIB;
+	$env;
+};
 
-	my $lib_dir = $self->config->build_tools_dir;
+lazy test_environment => method() {
+	my $env = Oberth::Prototype::EnvironmentVariables->new(
+		parent => $self->environment
+	);
 
-	unshift @PERL5LIB, File::Spec->catfile( $lib_dir, $_ ) for @{ (Oberth::Prototype::PERL_LIB_DIRS()) };
+	$env->set_string('AUTHOR_TESTING', 1 );
 
-	my @return = $code->();
+	# Accessibility <https://github.com/oberth-manoeuvre/oberth-prototype/issues/30>
+	$env->set_string('QT_ACCESSIBILITY', 0 );
+	$env->set_string('NO_AT_BRIDGE', 1 );
 
-	@PERL5LIB = @OLD_PERL5LIB;
-
-	@return;
-}
+	$env;
+};
 
 method _install_perl_deps_cpanm_dir_arg() {
 	my $global = $self->config->cpan_global_install;
@@ -44,36 +53,62 @@ method _install_perl_deps_cpanm_dir_arg() {
 
 method install_perl_build( @dists ) {
 	my $global = $self->config->cpan_global_install;
-	system(qw(cpm install),
-		@{ $global ? [ qw(-g) ] : [ qw(-L), $self->config->build_tools_dir ] },
-		@dists);
-	system(qw(cpanm -qn),
+	try {
+	$self->platform->author_perl->script('cpm',
+			qw(install),
+			@{ $global ? [ qw(-g) ] : [ qw(-L), $self->config->build_tools_dir ] },
+			@dists
+	);
+	} catch { };
+	$self->platform->author_perl->script('cpanm',
+		qw(-qn),
 		@{ $global ? [] : [ qw(-L), $self->config->build_tools_dir ] },
-		@dists);
+		@dists
+	);
 }
 
 method install_perl_deps( @dists ) {
 	my $global = $self->config->cpan_global_install;
-	system(qw(cpm install),
+	# TODO ignore modules that are installed already: --skip-installed
+	try {
+
+	$self->platform->build_perl->script(
+		qw(cpm install),
 		@{ $global ? [ qw(-g) ] : [ qw(-L), $self->config->lib_dir ] },
-		@dists);
-	system(qw(cpanm -qn),
+		@dists
+	);
+
+	$self->platform->build_perl->script(
+		qw(cpanm -qn),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		@dists);
+		@dists
+	);
+
+	} catch { };
 }
 
 method _install_dzil() {
-	unless( which 'dzil' ) {
-		$self->install_perl_build(qw(Dist::Zilla));
-	}
+	try {
+		$self->runner->system(
+			$self->platform->author_perl->command(
+				qw(-MDist::Zilla -e1),
+			)
+		);
+	} catch {
+		$self->install_perl_build(qw(Net::SSLeay Dist::Zilla));
+	};
 }
 
 method _get_dzil_authordeps() {
 	local $CWD = $self->directory;
+
 	my ($dzil_authordeps, $dzil_authordeps_stderr, $dzil_authordeps_exit) = capture {
-		$self->_run_with_build_perl(sub {
-			system(qw(dzil authordeps)); # --missing
-		});
+		try {
+			$self->platform->author_perl->script(
+				qw(dzil authordeps)
+				# --missing
+			);
+		} catch {};
 	};
 
 	my @dzil_authordeps = split /\n/, $dzil_authordeps;
@@ -89,9 +124,10 @@ method _install_dzil_authordeps() {
 method _get_dzil_listdeps() {
 	local $CWD = $self->directory;
 	my ($dzil_deps, $dzil_deps_stderr, $exit_listdeps) = capture {
-		$self->_run_with_build_perl(sub {
-			system(qw(dzil listdeps)); # --missing
-		});
+		$self->platform->author_perl->script(
+			qw(dzil listdeps)
+			# --missing
+		)
 	};
 	my @dzil_deps = grep {
 		$_ !~ /
@@ -113,19 +149,28 @@ method _install_dzil_listdeps() {
 
 }
 
+lazy dzil_build_dir => method() {
+	qq(../build-dir);
+};
+
 method _install_dzil_build() {
 	local $CWD = $self->directory;
-	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ../build-dir) );
-	});
-	use autodie qw(system);
-	system(qw(cpanm -qn),
+
+	$self->platform->author_perl->script(
+		'dzil', qw(build --in), $self->dzil_build_dir
+	);
+
+	$self->platform->build_perl->script(
+		'cpanm', qw(-qn),
 		qw(--installdeps),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		qw(../build-dir) );
+		$self->dzil_build_dir
+	);
 }
 
 method _dzil_has_plugin_test_podspelling() {
+	return 1;
+
 	load 'Test::DZil';
 
 	my $temp_dir = tempdir( CLEANUP => 1 );
@@ -144,17 +189,19 @@ method _dzil_has_plugin_test_podspelling() {
 method _install_dzil_spell_check_if_needed() {
 	return unless $^O eq 'linux';
 
+	require Oberth::Prototype::RepoPackage::APT;
 	if( $self->_dzil_has_plugin_test_podspelling ) {
-		if( $> != 0 ) {
-			warn "Not installing aspell";
-		} else {
-			system(qw(apt-get install -y --no-install-recommends aspell aspell-en));
-		}
+		$self->runner->system(
+			$self->platform->apt->install_packages_command(
+				map {
+					Oberth::Prototype::RepoPackage::APT->new( name => $_ )
+				} qw(aspell aspell-en)
+			)
+		);
 	}
 }
 
 method setup_build() {
-	$self->_env;
 	$self->_install_dzil;
 	$self->_install_dzil_authordeps;
 	$self->_install_dzil_spell_check_if_needed;
@@ -164,62 +211,77 @@ method setup_build() {
 }
 
 method install() {
-	$self->_env;
 	local $CWD = $self->directory;
-	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ../build-dir) );
-	});
-	system(qw(cpanm --notest),
+
+	$self->platform->author_perl->script(
+		qw(dzil build --in), $self->dzil_build_dir
+	);
+
+	$self->platform->build_perl->script(
+		qw(cpanm --notest),
 		qw(--no-man-pages),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		qw(../build-dir) );
+		$self->dzil_build_dir
+	);
 }
 
 method run_test() {
-	$self->_env;
+	my $test_env = $self->test_environment;
 	local $CWD = $self->directory;
-	$self->_run_with_build_perl(sub {
-		system(qw(dzil build --in ./build-dir) );
-	});
 
-	use autodie qw(system);
-	my $OLD_HARNESS_PERL_SWITCHES = $HARNESS_PERL_SWITCHES;
+	$self->platform->author_perl->script(
+		qw(dzil build --in), $self->dzil_build_dir
+	);
 
-	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
+	if( $self->config->has_oberth_coverage ) {
 		# Need to have at least Devel::Cover~1.31 for fix to
 		# "Devel::Cover hangs when used with Function::Parameters"
 		# GH#164 <https://github.com/pjcj/Devel--Cover/issues/164>.
-		system(qw(cpanm --notest),
+		$self->platform->build_perl->script(
+			qw(cpanm),
 			qw(--no-man-pages),
 			$self->_install_perl_deps_cpanm_dir_arg,
-			qw(Devel::Cover~1.31) );
+			qw(--notest),
+			qw(Devel::Cover~1.31)
+		);
 
-		$HARNESS_PERL_SWITCHES .= " -MDevel::Cover";
+		$test_env->append_string(
+			'HARNESS_PERL_SWITCHES', " -MDevel::Cover"
+		);
 
-		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
-			system(qw(cpanm --notest),
+
+		if( $self->config->oberth_coverage eq 'coveralls' ) {
+			$self->platform->build_perl->script(
+				qw(cpanm),
 				qw(--no-man-pages),
 				$self->_install_perl_deps_cpanm_dir_arg,
-				qw(Devel::Cover::Report::Coveralls) );
+				qw(--notest),
+				qw(Devel::Cover::Report::Coveralls)
+			);
 		}
 	}
 
-	system(qw(cpanm --test-only),
-		qw(--verbose),
+	$self->platform->build_perl->script(
+		qw(cpanm),
 		qw(--no-man-pages),
 		$self->_install_perl_deps_cpanm_dir_arg,
-		qw(./build-dir) );
+		qw(--verbose),
+		qw(--test-only),
+		$self->dzil_build_dir
+	);
 
-	if( exists $ENV{OBERTH_COVERAGE} && $ENV{OBERTH_COVERAGE} ) {
-		local $CWD = File::Spec->catfile( $self->directory, qw(build-dir) );
-		if( $ENV{OBERTH_COVERAGE} eq 'coveralls' ) {
-			system(qw(cover), qw(-report coveralls));
+	if( $self->config->has_oberth_coverage ) {
+		local $CWD = File::Spec->catfile( $self->directory, $self->dzil_build_dir );
+		if( $self->oberth_coverage eq 'coveralls' ) {
+			$self->platform->build_perl->script(
+				qw(cover), qw(-report coveralls)
+			);
 		} else {
-			system(qw(cover));
+			$self->platform->build_perl->script(
+				qw(cover),
+			);
 		}
 	}
-
-	$HARNESS_PERL_SWITCHES = $OLD_HARNESS_PERL_SWITCHES;
 }
 
 1;
