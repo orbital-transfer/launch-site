@@ -5,7 +5,7 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
 	docker ps -a
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 	brew install perl
-	$OBERTH_PROTOTYPE_DIR/maint/replace-shebang $OBERTH_PROTOTYPE_DIR/bin/oberthian
+	$OBERTH_PROTOTYPE_DIR/maint/replace-shebang $OBERTH_PROTOTYPE_DIR/vendor/p5-Oberth-Launch/bin/oberthian
 
 	oberthian bootstrap auto
 fi
