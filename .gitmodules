@@ -12,3 +12,4 @@
 [submodule "vendor/p5-Oberth-Launch"]
 	path = vendor/p5-Oberth-Launch
 	url = https://github.com/oberth-manoeuvre/p5-Oberth-Launch.git
+	branch = master
