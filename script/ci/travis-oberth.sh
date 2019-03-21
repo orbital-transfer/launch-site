@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function _setup() {
-	if [ -f $TRAVIS_BUILD_DIR/bin/oberthian ]; then
+	if [ -f $TRAVIS_BUILD_DIR/maint/oberth-prototype-repo ]; then
 		echo "Running inside oberthian: $TRAVIS_REPO_SLUG"
 		export OBERTH_PROTOTYPE_DIR=$TRAVIS_BUILD_DIR
 		export OBERTH_TEST_DIR=$(cd .. && pwd)/build/repository
@@ -32,7 +32,7 @@ function _setup() {
 			$OBERTH_PROTOTYPE_DIR
 	fi
 
-	export PATH="$OBERTH_PROTOTYPE_DIR"/bin:$PATH
+	export PATH="$OBERTH_PROTOTYPE_DIR"/vendor/p5-Oberth-Launch/bin:$PATH
 }
 
 function travis-oberth() {

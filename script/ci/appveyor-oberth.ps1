@@ -1,6 +1,6 @@
 function _Setup {
 	cinst StrawberryPerl
-	if( Test-Path $Env:APPVEYOR_BUILD_FOLDER\bin\oberthian ) {
+	if( Test-Path $Env:APPVEYOR_BUILD_FOLDER\maint\oberth-prototype-repo ) {
 		git submodule update --init --recursive
 		echo "Running inside oberthian: $Env:APPVEYOR_PROJECT_SLUG"
 		$Env:OBERTH_PROTOTYPE_DIR=$Env:APPVEYOR_BUILD_FOLDER
@@ -41,9 +41,10 @@ function appveyor-oberth {
 	cd $Env:OBERTH_TEST_DIR
 	switch( $command ) {
 		"install" {
-			perl $Env:OBERTH_PROTOTYPE_DIR\bin\oberthian bootstrap auto;
+			perl $Env:OBERTH_PROTOTYPE_DIR\vendor\p5-Oberth-Launch\bin\oberthian bootstrap auto;
+
 			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
-			perl $Env:OBERTH_PROTOTYPE_DIR\bin\oberthian;
+			perl $Env:OBERTH_PROTOTYPE_DIR\vendor\p5-Oberth-Launch\bin\oberthian;
 			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
 			break
 		}
@@ -51,7 +52,7 @@ function appveyor-oberth {
 			break
 		}
 		"test-script" {
-			perl $Env:OBERTH_PROTOTYPE_DIR\bin\oberthian test;
+			perl $Env:OBERTH_PROTOTYPE_DIR\vendor\p5-Oberth-Launch\bin\oberthian;
 			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
 			break
 		}

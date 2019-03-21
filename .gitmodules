@@ -9,3 +9,7 @@
 [submodule "vendor-external/cpm"]
 	path = vendor-external/cpm
 	url = https://github.com/skaji/cpm.git
+[submodule "vendor/p5-Oberth-Launch"]
+	path = vendor/p5-Oberth-Launch
+	url = https://github.com/oberth-manoeuvre/p5-Oberth-Launch.git
+	branch = master
