@@ -52,7 +52,7 @@ function appveyor-oberth {
 			break
 		}
 		"test-script" {
-			perl $Env:OBERTH_PROTOTYPE_DIR\vendor\p5-Oberth-Launch\bin\oberthian;
+			perl $Env:OBERTH_PROTOTYPE_DIR\vendor\p5-Oberth-Launch\bin\oberthian test;
 			if( $LastExitCode -ne 0 ) { exit $LastExitCode; }
 			break
 		}
