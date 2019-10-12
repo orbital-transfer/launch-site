@@ -19,7 +19,7 @@ function _Setup {
 		}
 	} else {
 		echo "Running outside oberthian: $Env:APPVEYOR_PROJECT_SLUG"
-		$Env:OBERTH_PROTOTYPE_DIR=(Join-Path ([System.IO.Path]::GetFullPath("$(pwd)/..")) 'external\oberth-manoeuvre\oberth-prototype')
+		$Env:OBERTH_PROTOTYPE_DIR=(Join-Path ([System.IO.Path]::GetFullPath("$(pwd)/..")) '_oberth\external\oberth-manoeuvre\oberth-prototype')
 		$Env:OBERTH_TEST_DIR=$Env:APPVEYOR_BUILD_FOLDER
 
 		if ( [string]::IsNullOrEmpty($Env:OBERTH_PROTOTYPE_BRANCH) ) {

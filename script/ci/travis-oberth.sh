@@ -18,7 +18,7 @@ function _setup() {
 		fi
 	else
 		echo "Running outside oberthian: $TRAVIS_REPO_SLUG"
-		export OBERTH_PROTOTYPE_DIR=$(cd .. && pwd)/external/oberth-manoeuvre/oberth-prototype
+		export OBERTH_PROTOTYPE_DIR=$(cd .. && pwd)/_oberth/external/oberth-manoeuvre/oberth-prototype
 		export OBERTH_TEST_DIR=$TRAVIS_BUILD_DIR
 
 		if [ -z "$OBERTH_PROTOTYPE_BRANCH" ]; then
