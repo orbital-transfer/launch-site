@@ -1,4 +1,4 @@
-FROM perl:5.26.0
+FROM perl:5.26
 
 # Set the working directory to /build
 WORKDIR /build
