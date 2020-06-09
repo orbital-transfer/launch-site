@@ -1,4 +1,6 @@
-FROM perl:5.26
+# https://github.com/Perl/docker-perl
+# https://github.com/Perl/docker-perl-tester
+FROM perldocker/perl-tester:5.26
 
 # Set the working directory to /build
 WORKDIR /build
