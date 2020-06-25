@@ -22,3 +22,11 @@ build_script:
   - ps: appveyor-oberth build-script
 test_script:
   - ps: appveyor-oberth test-script
+  - ps: 7z a $Env:APPVEYOR_BUILD_FOLDER\bootstrap.zip $Env:APPVEYOR_BUILD_FOLDER\extlib
+  - ps: 7z a $Env:APPVEYOR_BUILD_FOLDER\build.zip     $Env:OBERTH_TEST_DIR $Env:OBERTH_TEST_DIR\..\local
+
+artifacts:
+  - path: bootstrap.zip
+    name: bootstrap
+  - path: build.zip
+    name: build
