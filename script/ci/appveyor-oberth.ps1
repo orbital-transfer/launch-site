@@ -38,6 +38,7 @@ function appveyor-oberth {
 	param( [string]$command )
 	# Run under Strawberry Perl because default ActiveState Perl has broken pl2bat
 	$Env:PATH="C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;$Env:PATH"
+	perl -V
 	cd $Env:OBERTH_TEST_DIR
 	switch( $command ) {
 		"install" {
