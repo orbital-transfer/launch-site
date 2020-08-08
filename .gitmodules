@@ -8,8 +8,9 @@
 	branch = master
 [submodule "vendor-external/cpm"]
 	path = vendor-external/cpm
-	url = https://github.com/skaji/cpm.git
+	url = https://github.com/oberth-manoeuvre/cpm.git
+	branch = multi-worker-win32
 [submodule "vendor/p5-Oberth-Launch"]
 	path = vendor/p5-Oberth-Launch
 	url = https://github.com/oberth-manoeuvre/p5-Oberth-Launch.git
-	branch = master
+	branch = 79-cpm-multi-worker-win32
