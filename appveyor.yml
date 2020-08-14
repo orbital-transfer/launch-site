@@ -2,8 +2,8 @@ version: 1.0.{build}
 
 environment:
   matrix:
-  - OBERTH_TEST_REPO: https://github.com/project-renard/curie.git
-    OBERTH_TEST_REPO_BRANCH: master
+  - ORBITAL_TEST_REPO: https://github.com/project-renard/curie.git
+    ORBITAL_TEST_REPO_BRANCH: master
 
 cache:
   # cache local::lib
@@ -15,10 +15,10 @@ cache:
   - C:\Perl\site -> appveyor.yml
 
 install:
-  - ps: . script\ci\appveyor-oberth.ps1
-  - ps: appveyor-oberth install
+  - ps: . script\ci\appveyor-orbital.ps1
+  - ps: appveyor-orbital install
 
 build_script:
-  - ps: appveyor-oberth build-script
+  - ps: appveyor-orbital build-script
 test_script:
-  - ps: appveyor-oberth test-script
+  - ps: appveyor-orbital test-script

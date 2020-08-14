@@ -1,16 +1,16 @@
-[submodule "vendor/p5-Oberth-Manoeuvre"]
-	path = vendor/p5-Oberth-Manoeuvre
-	url = https://github.com/oberth-manoeuvre/p5-Oberth-Manoeuvre.git
+[submodule "vendor/p5-Orbital-Transfer"]
+	path = vendor/p5-Orbital-Transfer
+	url = https://github.com/orbital-transfer/p5-Orbital-Transfer.git
 	branch = master
-[submodule "vendor/p5-Oberth-Block-VCS-Git"]
-	path = vendor/p5-Oberth-Block-VCS-Git
-	url = https://github.com/oberth-manoeuvre/p5-Oberth-Block-VCS-Git.git
+[submodule "vendor/p5-Orbital-Payload-VCS-Git"]
+	path = vendor/p5-Orbital-Payload-VCS-Git
+	url = https://github.com/orbital-transfer/p5-Orbital-Payload-VCS-Git.git
 	branch = master
 [submodule "vendor-external/cpm"]
 	path = vendor-external/cpm
-	url = https://github.com/oberth-manoeuvre/cpm.git
+	url = https://github.com/orbital-transfer/cpm.git
 	branch = multi-worker-win32
-[submodule "vendor/p5-Oberth-Launch"]
-	path = vendor/p5-Oberth-Launch
-	url = https://github.com/oberth-manoeuvre/p5-Oberth-Launch.git
+[submodule "vendor/p5-Orbital-Launch"]
+	path = vendor/p5-Orbital-Launch
+	url = https://github.com/orbital-transfer/p5-Orbital-Launch.git
 	branch = master

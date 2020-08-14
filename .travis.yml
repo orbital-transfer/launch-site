@@ -1,7 +1,7 @@
 language: perl
 
 env:
-  - OBERTH_TEST_REPO: https://github.com/project-renard/curie.git
+  - ORBITAL_TEST_REPO: https://github.com/project-renard/curie.git
 
 
 matrix:
@@ -12,8 +12,8 @@ matrix:
     - os: osx
 
 before_install:
-  - . ./script/ci/travis-oberth.sh
-  - travis-oberth before-install
+  - . ./script/ci/travis-orbital.sh
+  - travis-orbital before-install
 
-install: travis-oberth install
-script:  travis-oberth script
+install: travis-orbital install
+script:  travis-orbital script

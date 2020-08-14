@@ -3,4 +3,4 @@
 CURDIR=`dirname "$0"`
 cd $CURDIR/..
 
-docker build -t oberth .
+docker build -t orbital .

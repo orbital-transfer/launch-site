@@ -15,7 +15,7 @@ fi
 if [ -r /home/zaki/sw_projects ]; then
 MY_MOUNT_VOLUMES="
 	--mount type=bind,source=/home/zaki/sw_projects/project-renard,target=/project-renard
-	--mount type=bind,source=/home/zaki/sw_projects/oberth-manoeuvre,target=/oberth-manoeuvre
+	--mount type=bind,source=/home/zaki/sw_projects/orbital-transfer,target=/orbital-transfer
 "
 else
 MY_MOUNT_VOLUMES=""
@@ -28,7 +28,7 @@ docker run --rm -it \
 	--env="DISPLAY" \
 	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
 	$MY_MOUNT_VOLUMES \
-	oberth:latest \
+	orbital:latest \
 	$RUN
 
 
