@@ -14,3 +14,6 @@
 	path = vendor/p5-Orbital-Launch
 	url = https://github.com/orbital-transfer/p5-Orbital-Launch.git
 	branch = master
+[submodule "vendor/p5-Orbital-Payload-Environment-Perl"]
+	path = vendor/p5-Orbital-Payload-Environment-Perl
+	url = https://github.com/orbital-transfer/p5-Orbital-Payload-Environment-Perl.git
