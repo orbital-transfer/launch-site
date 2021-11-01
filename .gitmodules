@@ -17,6 +17,8 @@
 [submodule "vendor/p5-Orbital-Payload-Env-Perl"]
 	path = vendor/p5-Orbital-Payload-Env-Perl
 	url = https://github.com/orbital-transfer/p5-Orbital-Payload-Env-Perl.git
+	branch = master
 [submodule "vendor/p5-Orbital-Payload-Sys"]
 	path = vendor/p5-Orbital-Payload-Sys
 	url = https://github.com/orbital-transfer/p5-Orbital-Payload-Sys.git
+	branch = master
