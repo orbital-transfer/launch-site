@@ -22,7 +22,7 @@ MY_MOUNT_VOLUMES=""
 fi
 
 
-xhost +local:root
+xhost +si:localuser:root
 
 docker run --rm -it \
 	--env="DISPLAY" \
@@ -32,4 +32,4 @@ docker run --rm -it \
 	$RUN
 
 
-xhost -local:root
+xhost -si:localuser:root
